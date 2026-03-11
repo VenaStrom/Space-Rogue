@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Route } from "./types";
+import WorkshopView from "./views/workshop";
 
 function App() {
   const [route, setRoute] = useState<Route>(Route.home);
@@ -12,14 +13,14 @@ function App() {
     {(() => {
       switch (route) {
         case Route.home:
-          return <div>Home</div>;
+          return <WorkshopView />;
         default:
           return <div>Not found</div>;
       }
     })()}
 
     <footer>
-      Footer
+      © 2026 Vena Ström
     </footer>
   </>);
 }
