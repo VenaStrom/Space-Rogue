@@ -6,6 +6,29 @@ function main(ctx: CanvasRenderingContext2D) {
   const ship = new Ship();
 
   ship.render(ctx);
+  ship.hookControls();
+
+
+  let lastTime = performance.now();
+
+  function frame() {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // FPS counter in corner
+    ctx.fillStyle = "white";
+    const now = performance.now();
+    const deltaMS = now - lastTime;
+    lastTime = now;
+    ctx.fillText(`${Math.round(1000 / deltaMS)} FPS`, 10, 20);
+
+    const physDelta = deltaMS / 16.66666666666667;
+
+    ship.physicsUpdate(physDelta);
+    ship.render(ctx);
+
+    window.requestAnimationFrame(frame);
+  }
+  window.requestAnimationFrame(frame);
 }
 
 export function CombatView() {

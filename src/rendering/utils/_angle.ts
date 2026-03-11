@@ -16,6 +16,13 @@ export class Angle {
     this.rads = degrees * (Math.PI / 180);
   }
 
+  public add(other: Angle | number) {
+    const otherRads = other instanceof Angle ? other.radians : other;
+    const result = new Angle();
+    result.radians = this.radians + otherRads;
+    return result;
+  }
+
   public static zero = Angle.fromDegrees(0);
 
   public static fromDegrees(degrees: number) {
