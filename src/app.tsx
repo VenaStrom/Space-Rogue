@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Route } from "./types";
-import WorkshopView from "./views/workshop";
+import { WorkshopView, CombatView } from "./views";
 
 function App() {
-  const [route, setRoute] = useState<Route>(Route.home);
+  const [route, setRoute] = useState<Route>(Route.workshop);
 
   return (<>
     <header>
@@ -12,8 +12,12 @@ function App() {
 
     {(() => {
       switch (route) {
-        case Route.home:
+        case Route.workshop:
           return <WorkshopView />;
+
+        case Route.combat:
+          return <CombatView />;
+
         default:
           return <div>Not found</div>;
       }

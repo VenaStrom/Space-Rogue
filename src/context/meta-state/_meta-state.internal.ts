@@ -6,7 +6,7 @@ export type MetaStateContextType = {
   setRoute: React.Dispatch<React.SetStateAction<Route>>;
 };
 export const defaultMetaStateContext: MetaStateContextType = {
-  route: Route.home,
+  route: Route.workshop,
   setRoute: () => { },
 };
 export const MetaStateContext = createContext<MetaStateContextType>(defaultMetaStateContext);
