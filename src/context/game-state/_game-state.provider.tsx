@@ -1,8 +1,16 @@
+import { useState } from "react";
 import { GameStateContext } from "./_game-state.internal";
 
 export default function GameStateProvider({ children }: { children: React.ReactNode }) {
-  return <GameStateContext.Provider value={{
+  const [time, setTime] = useState(0);
 
+  const incrementTime = () => {
+    setTime((prev) => prev + 1);
+  };
+
+  return <GameStateContext.Provider value={{
+    time,
+    incrementTime,
   }}>
     {children}
   </GameStateContext.Provider>;
