@@ -1,4 +1,5 @@
 import { Route } from "./_consts";
+import type { JSONValue } from "./_types";
 
 function isStandardObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null) {
@@ -11,12 +12,6 @@ function isStandardObject(value: unknown): value is Record<string, unknown> {
   }
   return true;
 }
-
-type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
-type JSONArray = JSONValue[];
-interface JSONObject {
-  [key: string]: JSONValue;
-};
 
 export function isRoute(value: JSONValue): value is Route {
   if (typeof value !== "string") {
