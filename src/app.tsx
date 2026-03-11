@@ -1,15 +1,18 @@
-import { useState } from "react";
 import { Route } from "./types";
 import { WorkshopView, CombatView } from "./views";
+import { useMetaState } from "./context/meta-state";
 
 function App() {
-  const [route, setRoute] = useState<Route>(Route.workshop);
+  const {
+    route,
+  } = useMetaState();
 
   return (<>
     <header>
       Space Rogue
     </header>
 
+    {/* Router */}
     {(() => {
       switch (route) {
         case Route.workshop:
