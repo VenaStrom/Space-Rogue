@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "start": "vite preview",
-    "lint": "tsc --noEmit -p tsconfig.json && eslint . -c eslint.config.ts"
+    "lint": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && eslint -c eslint.browser.config.ts . && eslint -c eslint.node.config.ts ."
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
