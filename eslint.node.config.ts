@@ -10,7 +10,10 @@ export default defineConfig(
       "*.config.{ts,mts,cts}",
       "eslint*.{ts,mts,cts}",
     ],
-    extends: [eslint.configs.recommended, tseslint.configs.recommendedTypeChecked],
+    extends: [
+      eslint.configs.recommended,
+      tseslint.configs.recommendedTypeChecked
+    ],
     languageOptions: {
       ecmaVersion: 2023,
       globals: globals.node,
@@ -18,6 +21,9 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
         projectService: true,
       },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
   globalIgnores([
