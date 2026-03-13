@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Camera, AsteroidBelt, Ship, Starscape } from "../rendering/combat";
+import { Camera, AsteroidBelt, Minimap, Ship, Starscape } from "../rendering/combat";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
@@ -14,6 +14,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
 
   const starscape = new Starscape(8000, 8000);
   const asteroidBelt = new AsteroidBelt(8000, 8000);
+  const minimap = new Minimap(8000, 8000);
   const camera = new Camera();
   // Start camera centered on ship
   camera.centerOn(ship.position);
@@ -58,6 +59,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
     asteroidBelt.render(ctx, camera.visibleRect(w, h));
     ship.render(ctx);
     camera.restoreTransform(ctx);
+    minimap.render(ctx, ship.position, ship.heading, camera.visibleRect(w, h), w, h);
 
     // Update DOM HUD (direct textContent mutation avoids React re-renders)
     stats.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
