@@ -1,4 +1,4 @@
-import type { V2 } from "../../types";
+import type { Rect, V2 } from "../../types";
 
 export class Camera {
   public pos: V2 = { x: 0, y: 0 };
@@ -39,5 +39,12 @@ export class Camera {
   /** Restore transform. Call after drawing world objects. */
   public restoreTransform(ctx: CanvasRenderingContext2D) {
     ctx.restore();
+  }
+
+  /** Returns the rectangle of world space currently visible on screen. */
+  public visibleRect(canvasW: number, canvasH: number): Rect {
+    const hw = (canvasW / 2) / this.zoom;
+    const hh = (canvasH / 2) / this.zoom;
+    return { x: this.pos.x - hw, y: this.pos.y - hh, w: hw * 2, h: hh * 2 };
   }
 }

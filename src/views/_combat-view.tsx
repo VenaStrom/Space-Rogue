@@ -8,7 +8,7 @@ type StatsElements = {
   physFrames: HTMLElement;
 };
 
-function main(ctx: CanvasRenderingContext2D, stats: StatsElements) {
+function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
   const ship = new Ship();
   ship.hookControls();
 
@@ -18,14 +18,16 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements) {
   camera.pos = { x: ship.position.x, y: ship.position.y };
 
   // Scroll to zoom
-  ctx.canvas.addEventListener("wheel", (e) => {
+  const onWheel = (e: WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
     camera.zoom = Math.max(0.25, Math.min(4, camera.zoom * factor));
-  }, { passive: false });
+  };
+  ctx.canvas.addEventListener("wheel", onWheel, { passive: false });
 
   let lastTime = performance.now();
   let accumulatedMS = 0;
+  let rafHandle: number;
 
   function frame() {
     const now = performance.now();
@@ -50,18 +52,24 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements) {
     ctx.clearRect(0, 0, w, h);
 
     camera.applyTransform(ctx, w, h);
-    starscape.render(ctx);
+    starscape.render(ctx, camera.visibleRect(w, h));
     ship.render(ctx);
     camera.restoreTransform(ctx);
 
     // Update DOM HUD (direct textContent mutation avoids React re-renders)
-    stats.renderFps.textContent = `${Math.round(1000 / deltaMS)} fps`;
-    stats.physFrames.textContent = `${physSteps} phys`;
+    stats.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
+    stats.physFrames.textContent = `${physSteps.toString().padStart(2, " ")} phys`;
 
-    window.requestAnimationFrame(frame);
+    rafHandle = window.requestAnimationFrame(frame);
   }
 
-  window.requestAnimationFrame(frame);
+  rafHandle = window.requestAnimationFrame(frame);
+
+  return () => {
+    window.cancelAnimationFrame(rafHandle);
+    ctx.canvas.removeEventListener("wheel", onWheel);
+    ship.unhookControls();
+  };
 }
 
 export function CombatView() {
@@ -75,7 +83,7 @@ export function CombatView() {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current });
+    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current });
   }, []);
 
   return <main>
@@ -89,7 +97,7 @@ export function CombatView() {
         className={`
           bg-gray-900
           aspect-4/3
-          w-8/12
+          w-full
           rounded-sm
           block
         `}
