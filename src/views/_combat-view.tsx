@@ -16,7 +16,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
   const asteroidBelt = new AsteroidBelt(8000, 8000);
   const camera = new Camera();
   // Start camera centered on ship
-  camera.pos = { x: ship.position.x, y: ship.position.y };
+  camera.centerOn(ship.position);
 
   // Scroll to zoom
   const onWheel = (e: WheelEvent) => {
@@ -48,7 +48,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
 
     const { width: w, height: h } = ctx.canvas;
 
-    camera.update(ship.position, ship.shipLength);
+    camera.update(ship.position, ship.velocity, ship.shipLength, w, h);
 
     // Render at whatever rate rAF gives
     ctx.clearRect(0, 0, w, h);

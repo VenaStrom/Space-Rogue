@@ -11,6 +11,7 @@ export class Ship {
   private get sinScale() { return Math.sin(this.angle.radians); }
 
   public get position(): Readonly<V2> { return this.pos; }
+  public get velocity(): Readonly<V2> { return this.vel; }
   public get shipLength(): number { return this.length; }
   public get colliderRadius(): number { return this.wingspan / 2; }
 
