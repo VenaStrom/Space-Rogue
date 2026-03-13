@@ -6,10 +6,11 @@ const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 type StatsElements = {
   renderFps: HTMLElement;
   physFrames: HTMLElement;
+  camZoom: HTMLElement;
 };
 
 function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
-  const ship = new Ship({ x: 7500, y: 4000 });
+  const ship = new Ship({ x: 550, y: 4000 });
   ship.hookControls();
 
   const starscape = new Starscape(8000, 8000);
@@ -23,7 +24,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
   const onWheel = (e: WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-    camera.zoom = Math.max(0.25, Math.min(4, camera.zoom * factor));
+    camera.zoom = Math.max(0.15, Math.min(4, camera.zoom * factor));
   };
   ctx.canvas.addEventListener("wheel", onWheel, { passive: false });
 
@@ -64,6 +65,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
     // Update DOM HUD (direct textContent mutation avoids React re-renders)
     stats.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
     stats.physFrames.textContent = `${physSteps.toString().padStart(2, " ")} phys`;
+    stats.camZoom.textContent    = `${camera.zoom.toFixed(2)}x zoom`;
 
     rafHandle = window.requestAnimationFrame(frame);
   }
@@ -81,14 +83,15 @@ export function CombatView() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLSpanElement>(null);
   const physRef = useRef<HTMLSpanElement>(null);
+  const zoomRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current || !fpsRef.current || !physRef.current) return;
+    if (!canvasRef.current || !fpsRef.current || !physRef.current || !zoomRef.current) return;
 
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current });
+    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current });
   }, []);
 
   return <main>
@@ -109,7 +112,8 @@ export function CombatView() {
       />
       <div className="absolute top-2 left-2 text-white text-xs font-mono leading-tight pointer-events-none select-none">
         <span ref={fpsRef}>-- fps</span><br />
-        <span ref={physRef}>-- phys</span>
+        <span ref={physRef}>-- phys</span><br />
+        <span ref={zoomRef}>-- zoom</span>
       </div>
     </div>
   </main>;
