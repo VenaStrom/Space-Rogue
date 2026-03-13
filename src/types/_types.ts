@@ -25,6 +25,8 @@ export type SlotType = "weapon" | "thruster" | "misc";
 export type Slot = {
   type: SlotType;
   item: null;
+  /** Ship-local coordinates of this mounting point (forward = +x, centroid at origin). */
+  hardpoint: V2;
 };
 
 export type ShipLoadout = {
