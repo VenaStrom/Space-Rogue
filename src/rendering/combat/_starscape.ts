@@ -38,7 +38,7 @@ export class Starscape {
    * Draw only the stars inside visibleRect. Must be called while the camera
    * transform is active so world-space coordinates are correct.
    *
-   * Drawing only visible stars per-frame (instead of blitting a full-world
+   * Drawing only visible stars per-frame (instead of rendering a full-world
    * OffscreenCanvas) keeps cost proportional to the number of stars on screen
    * rather than the total world size.
    */

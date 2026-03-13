@@ -2,7 +2,7 @@ import type { V2 } from "../../types";
 import { Angle } from "../utils";
 
 export class Ship {
-  private pos: V2 = { x: 400, y: 300 };
+  private pos: V2;
   private vel: V2 = { x: 0, y: 0 };
   private acc: V2 = { x: 0, y: 0 };
   private angle: Angle = Angle.zero;
@@ -23,6 +23,10 @@ export class Ship {
   private heldKeys: Set<string> = new Set();
   private keydownHook = (_e: KeyboardEvent) => { };
   private keyupHook = (_e: KeyboardEvent) => { };
+
+  constructor(pos: V2 = { x: 0, y: 0 }) {
+    this.pos = pos;
+  }
 
   public render(ctx: CanvasRenderingContext2D) {
     const originalFillStyle = ctx.fillStyle;

@@ -9,10 +9,10 @@ type StatsElements = {
 };
 
 function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
-  const ship = new Ship();
+  const ship = new Ship({ x: 4000, y: 4000 });
   ship.hookControls();
 
-  const starscape = new Starscape(4000, 4000);
+  const starscape = new Starscape(8000, 8000);
   const camera = new Camera();
   // Start camera centered on ship
   camera.pos = { x: ship.position.x, y: ship.position.y };
