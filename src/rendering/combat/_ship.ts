@@ -17,22 +17,33 @@ export class Ship {
   private length = 100;
 
   private controlsHooked = false;
-  private controlsHook = (_e: KeyboardEvent) => { };
+  private heldKeys: Set<string> = new Set();
+  private keydownHook = (_e: KeyboardEvent) => { };
+  private keyupHook = (_e: KeyboardEvent) => { };
 
   public render(ctx: CanvasRenderingContext2D) {
     const originalFillStyle = ctx.fillStyle;
 
     ctx.fillStyle = this.color;
 
-    // Make triangle hull
+    const cos = Math.cos(this.angle.radians);
+    const sin = Math.sin(this.angle.radians);
+    const L = this.length;
+    const W = this.wingspan;
+    // Offset vertices so this.pos is at the centroid (L/3 from base, 2L/3 from nose)
+    const co = L / 3;
+
+    // Make triangle hull centered on centroid
     ctx.beginPath();
-    ctx.moveTo(this.pos.x + Math.cos(this.angle.radians) * this.length, this.pos.y + Math.sin(this.angle.radians) * this.length);
-    ctx.lineTo(this.pos.x + Math.cos(this.angle.radians + Math.PI / 2) * this.wingspan / 2, this.pos.y + Math.sin(this.angle.radians + Math.PI / 2) * this.wingspan / 2);
-    ctx.lineTo(this.pos.x + Math.cos(this.angle.radians - Math.PI / 2) * this.wingspan / 2, this.pos.y + Math.sin(this.angle.radians - Math.PI / 2) * this.wingspan / 2);
+    // Nose: forward * (2L/3)
+    ctx.moveTo(this.pos.x + cos * (L - co), this.pos.y + sin * (L - co));
+    // Left wing: left-perp * (W/2) - forward * (L/3)
+    ctx.lineTo(this.pos.x + (-sin * (W / 2) - cos * co), this.pos.y + (cos * (W / 2) - sin * co));
+    // Right wing: right-perp * (W/2) - forward * (L/3)
+    ctx.lineTo(this.pos.x + (sin * (W / 2) - cos * co), this.pos.y + (-cos * (W / 2) - sin * co));
     ctx.closePath();
 
     ctx.fill();
-
 
     this.debugRender(ctx);
 
@@ -44,31 +55,12 @@ export class Ship {
     if (this.controlsHooked) return;
 
     this.controlsHooked = true;
-    this.controlsHook = (e) => {
-      const keys: Record<string, string[]> = {
-        thrust: ["w", "ArrowUp"],
-        reverse: ["s", "ArrowDown"],
-        turnLeft: ["a", "ArrowLeft"],
-        turnRight: ["d", "ArrowRight"],
-      };
 
-      if (keys.thrust.includes(e.key)) {
-        this.acc.x += this.cosScale * 0.1;
-        this.acc.y += this.sinScale * 0.1;
-      }
-      if (keys.reverse.includes(e.key)) {
-        this.acc.x -= this.cosScale * 0.1;
-        this.acc.y -= this.sinScale * 0.1;
-      }
-      if (keys.turnLeft.includes(e.key)) {
-        this.angularAcc -= 0.001;
-      }
-      if (keys.turnRight.includes(e.key)) {
-        this.angularAcc += 0.001;
-      }
-    };
+    this.keydownHook = (e) => { this.heldKeys.add(e.key); };
+    this.keyupHook = (e) => { this.heldKeys.delete(e.key); };
 
-    window.addEventListener("keydown", this.controlsHook);
+    window.addEventListener("keydown", this.keydownHook);
+    window.addEventListener("keyup", this.keyupHook);
   }
 
   public debugRender(ctx: CanvasRenderingContext2D) {
@@ -104,10 +96,27 @@ export class Ship {
     if (!this.controlsHooked) return;
 
     this.controlsHooked = false;
-    window.removeEventListener("keydown", this.controlsHook);
+    window.removeEventListener("keydown", this.keydownHook);
+    window.removeEventListener("keyup", this.keyupHook);
   }
 
   public physicsUpdate(delta: number) {
+    // Continuous input — applied every frame while key is held
+    if (this.heldKeys.has("w") || this.heldKeys.has("ArrowUp")) {
+      this.acc.x += this.cosScale * 0.05;
+      this.acc.y += this.sinScale * 0.05;
+    }
+    if (this.heldKeys.has("s") || this.heldKeys.has("ArrowDown")) {
+      this.acc.x -= this.cosScale * 0.05;
+      this.acc.y -= this.sinScale * 0.05;
+    }
+    if (this.heldKeys.has("a") || this.heldKeys.has("ArrowLeft")) {
+      this.angularAcc -= 0.005;
+    }
+    if (this.heldKeys.has("d") || this.heldKeys.has("ArrowRight")) {
+      this.angularAcc += 0.005;
+    }
+
     this.vel.x += this.acc.x * delta;
     this.vel.y += this.acc.y * delta;
 
