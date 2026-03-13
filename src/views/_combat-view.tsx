@@ -1,33 +1,39 @@
 import { useEffect, useRef } from "react";
 import { Ship } from "../rendering/combat";
 
+const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
+
 function main(ctx: CanvasRenderingContext2D) {
-
   const ship = new Ship();
-
-  ship.render(ctx);
   ship.hookControls();
 
-
   let lastTime = performance.now();
+  let accumulatedMS = 0;
+  let renderFps = 0;
 
   function frame() {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // FPS counter in corner
-    ctx.fillStyle = "white";
     const now = performance.now();
-    const deltaMS = now - lastTime;
+    // Clamp to 100 ms to prevent a "spiral of death" after tab suspension
+    const deltaMS = Math.min(now - lastTime, 100);
     lastTime = now;
-    ctx.fillText(`${Math.round(1000 / deltaMS)} FPS`, 10, 20);
+    renderFps = 1000 / deltaMS;
 
-    const physDelta = deltaMS / 16.66666666666667;
+    // Drain accumulator in fixed physics steps
+    accumulatedMS += deltaMS;
+    while (accumulatedMS >= PHYS_STEP_MS) {
+      ship.physicsUpdate(1); // delta=1 is always one fixed step
+      accumulatedMS -= PHYS_STEP_MS;
+    }
 
-    ship.physicsUpdate(physDelta);
+    // Render at whatever rate rAF gives
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = "white";
+    ctx.fillText(`${Math.round(renderFps)} FPS`, 10, 20);
     ship.render(ctx);
 
     window.requestAnimationFrame(frame);
   }
+
   window.requestAnimationFrame(frame);
 }
 
