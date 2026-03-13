@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Camera, Ship, Starscape } from "../rendering/combat";
+import { Camera, AsteroidBelt, Ship, Starscape } from "../rendering/combat";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
@@ -9,10 +9,11 @@ type StatsElements = {
 };
 
 function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
-  const ship = new Ship({ x: 4000, y: 4000 });
+  const ship = new Ship({ x: 7500, y: 4000 });
   ship.hookControls();
 
   const starscape = new Starscape(8000, 8000);
+  const asteroidBelt = new AsteroidBelt(8000, 8000);
   const camera = new Camera();
   // Start camera centered on ship
   camera.pos = { x: ship.position.x, y: ship.position.y };
@@ -40,6 +41,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
     let physSteps = 0;
     while (accumulatedMS >= PHYS_STEP_MS) {
       ship.physicsUpdate(1); // delta=1 is always one fixed step
+      asteroidBelt.resolveShip(ship);
       accumulatedMS -= PHYS_STEP_MS;
       physSteps++;
     }
@@ -53,6 +55,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
 
     camera.applyTransform(ctx, w, h);
     starscape.render(ctx, camera.visibleRect(w, h));
+    asteroidBelt.render(ctx, camera.visibleRect(w, h));
     ship.render(ctx);
     camera.restoreTransform(ctx);
 

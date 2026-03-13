@@ -12,6 +12,21 @@ export class Ship {
 
   public get position(): Readonly<V2> { return this.pos; }
   public get shipLength(): number { return this.length; }
+  public get colliderRadius(): number { return this.wingspan / 2; }
+
+  /**
+   * Displace the ship by (dx, dy) and cancel any velocity component pointing
+   * into the contact normal (nx, ny). Used by the collision resolver.
+   */
+  public pushOut(dx: number, dy: number, nx: number, ny: number): void {
+    this.pos.x += dx;
+    this.pos.y += dy;
+    const vDotN = this.vel.x * nx + this.vel.y * ny;
+    if (vDotN < 0) {
+      this.vel.x -= vDotN * nx;
+      this.vel.y -= vDotN * ny;
+    }
+  }
 
   private color = "green";
   private wingspan = 50;

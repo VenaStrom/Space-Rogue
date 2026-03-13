@@ -1,11 +1,11 @@
 import type { Rect } from "../../types";
 
-interface Star {
+type Star = {
   x: number;
   y: number;
   size: number;
   style: string;
-}
+};
 
 export class Starscape {
   private readonly stars: Star[];
