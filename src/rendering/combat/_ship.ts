@@ -4,10 +4,8 @@ import { Angle } from "../utils";
 export class Ship {
   private pos: V2;
   private vel: V2 = { x: 0, y: 0 };
-  private acc: V2 = { x: 0, y: 0 };
   private angle: Angle = Angle.zero;
   private angularVel = 0;
-  private angularAcc = 0;
 
   private get cosScale() { return Math.cos(this.angle.radians); }
   private get sinScale() { return Math.sin(this.angle.radians); }
@@ -84,11 +82,14 @@ export class Ship {
     ctx.lineTo(this.pos.x + this.vel.x * 10, this.pos.y + this.vel.y * 10);
     ctx.stroke();
 
-    // Acceleration vector
+    // Lateral velocity vector (shows slip — cyan when over-turning)
+    const cos = this.cosScale;
+    const sin = this.sinScale;
+    const vLat = this.vel.x * -sin + this.vel.y * cos;
     ctx.strokeStyle = "cyan";
     ctx.beginPath();
     ctx.moveTo(this.pos.x, this.pos.y);
-    ctx.lineTo(this.pos.x + this.acc.x * 1000, this.pos.y + this.acc.y * 1000);
+    ctx.lineTo(this.pos.x + (-sin) * vLat * 10, this.pos.y + cos * vLat * 10);
     ctx.stroke();
 
     // Angular velocity arc
@@ -108,39 +109,47 @@ export class Ship {
   }
 
   public physicsUpdate(delta: number) {
-    // Continuous input — applied every frame while key is held
+    const cos = this.cosScale;
+    const sin = this.sinScale;
+
+    // Thrust / brake along the ship's facing
     if (this.heldKeys.has("w") || this.heldKeys.has("ArrowUp")) {
-      this.acc.x += this.cosScale * 0.05;
-      this.acc.y += this.sinScale * 0.05;
+      this.vel.x += cos * 0.08 * delta;
+      this.vel.y += sin * 0.08 * delta;
     }
     if (this.heldKeys.has("s") || this.heldKeys.has("ArrowDown")) {
-      this.acc.x -= this.cosScale * 0.05;
-      this.acc.y -= this.sinScale * 0.05;
-    }
-    if (this.heldKeys.has("a") || this.heldKeys.has("ArrowLeft")) {
-      this.angularAcc -= 0.005;
-    }
-    if (this.heldKeys.has("d") || this.heldKeys.has("ArrowRight")) {
-      this.angularAcc += 0.005;
+      this.vel.x -= cos * 0.06 * delta;
+      this.vel.y -= sin * 0.06 * delta;
     }
 
-    this.vel.x += this.acc.x * delta;
-    this.vel.y += this.acc.y * delta;
+    // Steering — angular velocity with a hard cap so the turn rate is finite
+    const maxTurn = 0.045;
+    if (this.heldKeys.has("a") || this.heldKeys.has("ArrowLeft")) {
+      this.angularVel = Math.max(this.angularVel - 0.005 * delta, -maxTurn);
+    }
+    if (this.heldKeys.has("d") || this.heldKeys.has("ArrowRight")) {
+      this.angularVel = Math.min(this.angularVel + 0.005 * delta, maxTurn);
+    }
+    this.angularVel *= 0.85;
+    this.angle = this.angle.add(this.angularVel * delta);
+
+    // --- Plane-style directional drag ---
+    // Decompose velocity into the ship's (now-updated) forward and lateral axes.
+    // Heavy lateral drag steers velocity toward the new heading; the cost is
+    // proportional to how far the heading has rotated from the velocity vector,
+    // so over-turning bleeds speed hard.
+    const fwdCos = this.cosScale; // recalculate after angle update
+    const fwdSin = this.sinScale;
+    const vFwd = this.vel.x * fwdCos + this.vel.y * fwdSin;
+    const vLat = this.vel.x * -fwdSin + this.vel.y * fwdCos;
+
+    const dampedFwd = vFwd * 0.993; // gentle forward drag
+    const dampedLat = vLat * 0.65;  // heavy lateral drag — tight turns lose speed fast
+
+    this.vel.x = dampedFwd * fwdCos - dampedLat * fwdSin;
+    this.vel.y = dampedFwd * fwdSin + dampedLat * fwdCos;
 
     this.pos.x += this.vel.x * delta;
     this.pos.y += this.vel.y * delta;
-
-    this.angularVel += this.angularAcc * delta;
-    this.angle = this.angle.add(this.angularVel * delta);
-
-    // Friction
-    this.vel.x *= 0.99;
-    this.vel.y *= 0.99;
-    this.angularVel *= 0.9;
-
-    // Reset acceleration
-    this.acc.x = 0;
-    this.acc.y = 0;
-    this.angularAcc = 0;
   }
 }
