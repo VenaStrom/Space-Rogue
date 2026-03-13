@@ -15,3 +15,23 @@ export type Rect = {
   w: number;
   h: number;
 };
+
+export type SlotType = "weapon" | "thruster" | "misc";
+
+/**
+ * A single equipment slot on the player's ship.
+ * `item` will become `ItemId | null` once items are implemented.
+ */
+export type Slot = {
+  type: SlotType;
+  item: null;
+};
+
+export type ShipLoadout = {
+  /** 6 forward-facing weapon hardpoints. */
+  weaponSlots: Slot[];
+  /** 4 engine/thruster bays. */
+  thrusterSlots: Slot[];
+  /** 2 miscellaneous utility slots. */
+  miscSlots: Slot[];
+};

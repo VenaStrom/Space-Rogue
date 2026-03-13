@@ -1,5 +1,5 @@
 import { Route } from "./types";
 
 export const config = {
-  defaultRoute: Route.combat,
+  defaultRoute: Route.workshop,
 } as const;
