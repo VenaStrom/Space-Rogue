@@ -1,11 +1,22 @@
 import { useEffect, useRef } from "react";
-import { Ship } from "../rendering/combat";
+import { Camera, Ship } from "../rendering/combat";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
 function main(ctx: CanvasRenderingContext2D) {
   const ship = new Ship();
   ship.hookControls();
+
+  const camera = new Camera();
+  // Start camera centered on ship
+  camera.pos = { x: ship.position.x, y: ship.position.y };
+
+  // Scroll to zoom
+  ctx.canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+    camera.zoom = Math.max(0.25, Math.min(4, camera.zoom * factor));
+  }, { passive: false });
 
   let lastTime = performance.now();
   let accumulatedMS = 0;
@@ -25,11 +36,20 @@ function main(ctx: CanvasRenderingContext2D) {
       accumulatedMS -= PHYS_STEP_MS;
     }
 
+    const { width: w, height: h } = ctx.canvas;
+
+    camera.update(ship.position, ship.shipLength);
+
     // Render at whatever rate rAF gives
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.clearRect(0, 0, w, h);
+
+    camera.applyTransform(ctx, w, h);
+    ship.render(ctx);
+    camera.restoreTransform(ctx);
+
+    // HUD drawn in screen space after restoring transform
     ctx.fillStyle = "white";
     ctx.fillText(`${Math.round(renderFps)} FPS`, 10, 20);
-    ship.render(ctx);
 
     window.requestAnimationFrame(frame);
   }

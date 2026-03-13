@@ -12,6 +12,9 @@ export class Ship {
   private get cosScale() { return Math.cos(this.angle.radians); }
   private get sinScale() { return Math.sin(this.angle.radians); }
 
+  public get position(): Readonly<V2> { return this.pos; }
+  public get shipLength(): number { return this.length; }
+
   private color = "green";
   private wingspan = 50;
   private length = 100;
