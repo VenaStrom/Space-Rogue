@@ -1,11 +1,18 @@
 import { Route } from "./types";
-import { WorkshopView, CombatView } from "./views";
+import { WorkshopView, CombatView, ShipEditorView } from "./views";
 import { useMetaState } from "./context/meta-state";
 import { FullscreenIcon } from "lucide-react";
+
+const NAV_ROUTES: { label: string; route: Route }[] = [
+  { label: "Workshop", route: Route.workshop },
+  { label: "Ship Editor", route: Route.shipEditor },
+  { label: "Combat", route: Route.combat },
+];
 
 function App() {
   const {
     route,
+    setRoute,
   } = useMetaState();
 
   return (<>
@@ -13,6 +20,22 @@ function App() {
       <h2>
         Space Rogue
       </h2>
+
+      <nav className="flex gap-1">
+        {NAV_ROUTES.map(({ label, route: r }) => (
+          <button
+            key={r}
+            onClick={() => setRoute(r)}
+            className={`px-3 py-1 text-sm rounded transition-colors ${
+              route === r
+                ? "bg-gray-700 text-white"
+                : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
 
       {/* Fullscreen button */}
       <button
@@ -39,6 +62,9 @@ function App() {
       switch (route) {
         case Route.workshop:
           return <WorkshopView />;
+
+        case Route.shipEditor:
+          return <ShipEditorView />;
 
         case Route.combat:
           return <CombatView />;

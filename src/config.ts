@@ -1,5 +1,5 @@
 import { Route } from "./types";
 
 export const config = {
-  defaultRoute: Route.workshop,
+  defaultRoute: Route.shipEditor,
 } as const;

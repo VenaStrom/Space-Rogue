@@ -30,6 +30,8 @@ export type Slot = {
 };
 
 export type ShipLoadout = {
+  /** Polygon vertices in ship-local space (forward = +x, centroid at origin). */
+  hullVertices: V2[];
   /** 6 forward-facing weapon hardpoints. */
   weaponSlots: Slot[];
   /** 4 engine/thruster bays. */

@@ -5,7 +5,16 @@ function makeSlots(type: SlotType, hardpoints: ReadonlyArray<V2>): Slot[] {
   return hardpoints.map(hardpoint => ({ type, item: null, hardpoint }));
 }
 
+// Default triangle hull: nose (67,0), starboard wing (-33,-25), port wing (-33,25)
+// Ship-local space: forward = +x, centroid at origin, +y = port (screen-down)
+const DEFAULT_HULL: V2[] = [
+  { x: 67, y: 0 },
+  { x: -33, y: -25 },
+  { x: -33, y: 25 },
+];
+
 export const defaultPlayerShip: ShipLoadout = {
+  hullVertices: DEFAULT_HULL,
   weaponSlots: makeSlots("weapon", [
     { x: 54, y: -9 }, { x: 54, y: 9 },
     { x: 25, y: -16 }, { x: 25, y: 16 },

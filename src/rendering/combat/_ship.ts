@@ -1,11 +1,18 @@
 import type { V2 } from "../../types";
 import { Angle } from "../utils";
 
+const DEFAULT_HULL: V2[] = [
+  { x: 67, y: 0 },
+  { x: -33, y: -25 },
+  { x: -33, y: 25 },
+];
+
 export class Ship {
   private pos: V2;
   private vel: V2 = { x: 0, y: 0 };
   private angle: Angle = Angle.zero;
   private angularVel = 0;
+  private hullVertices: V2[];
 
   private get cosScale() { return Math.cos(this.angle.radians); }
   private get sinScale() { return Math.sin(this.angle.radians); }
@@ -42,8 +49,9 @@ export class Ship {
   private keydownHook = (_e: KeyboardEvent) => { };
   private keyupHook = (_e: KeyboardEvent) => { };
 
-  constructor(pos: V2 = { x: 0, y: 0 }) {
+  constructor(pos: V2 = { x: 0, y: 0 }, hull: V2[] = DEFAULT_HULL) {
     this.pos = pos;
+    this.hullVertices = hull;
   }
 
   public render(ctx: CanvasRenderingContext2D) {
@@ -55,21 +63,15 @@ export class Ship {
 
     const cos = Math.cos(this.angle.radians);
     const sin = Math.sin(this.angle.radians);
-    const L = this.length;
-    const W = this.wingspan;
-    // Offset vertices so this.pos is at the centroid (L/3 from base, 2L/3 from nose)
-    const co = L / 3;
 
-    // Make triangle hull centered on centroid
     ctx.beginPath();
-    // Nose: forward * (2L/3)
-    ctx.moveTo(this.pos.x + cos * (L - co), this.pos.y + sin * (L - co));
-    // Left wing: left-perp * (W/2) - forward * (L/3)
-    ctx.lineTo(this.pos.x + (-sin * (W / 2) - cos * co), this.pos.y + (cos * (W / 2) - sin * co));
-    // Right wing: right-perp * (W/2) - forward * (L/3)
-    ctx.lineTo(this.pos.x + (sin * (W / 2) - cos * co), this.pos.y + (-cos * (W / 2) - sin * co));
+    for (let i = 0; i < this.hullVertices.length; i++) {
+      const v = this.hullVertices[i];
+      const wx = this.pos.x + v.x * cos - v.y * sin;
+      const wy = this.pos.y + v.x * sin + v.y * cos;
+      if (i === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+    }
     ctx.closePath();
-
     ctx.fill();
 
     this.debugRender(ctx);
