@@ -34,6 +34,9 @@ export class Ship {
   private wingspan = 50;
   private length = 100;
 
+  private readonly TRAIL_LEN = 60;
+  private trail: V2[] = [];
+
   private controlsHooked = false;
   private heldKeys: Set<string> = new Set();
   private keydownHook = (_e: KeyboardEvent) => { };
@@ -44,6 +47,8 @@ export class Ship {
   }
 
   public render(ctx: CanvasRenderingContext2D) {
+    this.renderTrail(ctx);
+
     const originalFillStyle = ctx.fillStyle;
 
     ctx.fillStyle = this.color;
@@ -70,6 +75,31 @@ export class Ship {
     this.debugRender(ctx);
 
     ctx.fillStyle = originalFillStyle;
+  }
+
+  private renderTrail(ctx: CanvasRenderingContext2D): void {
+    const pts = this.trail;
+    const n = pts.length;
+    if (n < 2) return;
+
+    const prevLineWidth = ctx.lineWidth;
+    const prevStrokeStyle = ctx.strokeStyle;
+    const prevLineCap = ctx.lineCap;
+    ctx.lineCap = "round";
+
+    for (let i = 1; i < n; i++) {
+      const t = i / (n - 1); // 0 = oldest, 1 = newest
+      ctx.lineWidth = t * 6;
+      ctx.strokeStyle = `rgba(128, 216, 255, ${(t * 0.75).toFixed(2)})`;
+      ctx.beginPath();
+      ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
+      ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    }
+
+    ctx.lineWidth = prevLineWidth;
+    ctx.strokeStyle = prevStrokeStyle;
+    ctx.lineCap = prevLineCap;
   }
 
   public hookControls() {
@@ -130,21 +160,37 @@ export class Ship {
     const sin = this.sinScale;
 
     // Thrust / brake along the ship's facing
-    if (this.heldKeys.has("w") || this.heldKeys.has("ArrowUp")) {
+    if (
+      this.heldKeys.has("w")
+      || this.heldKeys.has("W")
+      || this.heldKeys.has("ArrowUp")
+    ) {
       this.vel.x += cos * 0.08 * delta;
       this.vel.y += sin * 0.08 * delta;
     }
-    if (this.heldKeys.has("s") || this.heldKeys.has("ArrowDown")) {
+    if (
+      this.heldKeys.has("s")
+      || this.heldKeys.has("S")
+      || this.heldKeys.has("ArrowDown")
+    ) {
       this.vel.x -= cos * 0.06 * delta;
       this.vel.y -= sin * 0.06 * delta;
     }
 
     // Steering — angular velocity with a hard cap so the turn rate is finite
     const maxTurn = 0.045;
-    if (this.heldKeys.has("a") || this.heldKeys.has("ArrowLeft")) {
+    if (
+      this.heldKeys.has("a")
+      || this.heldKeys.has("A")
+      || this.heldKeys.has("ArrowLeft")
+    ) {
       this.angularVel = Math.max(this.angularVel - 0.005 * delta, -maxTurn);
     }
-    if (this.heldKeys.has("d") || this.heldKeys.has("ArrowRight")) {
+    if (
+      this.heldKeys.has("d")
+      || this.heldKeys.has("D")
+      || this.heldKeys.has("ArrowRight")
+    ) {
       this.angularVel = Math.min(this.angularVel + 0.005 * delta, maxTurn);
     }
     this.angularVel *= 0.85;
@@ -168,5 +214,8 @@ export class Ship {
 
     this.pos.x += this.vel.x * delta;
     this.pos.y += this.vel.y * delta;
+
+    this.trail.push({ x: this.pos.x, y: this.pos.y });
+    if (this.trail.length > this.TRAIL_LEN) this.trail.shift();
   }
 }
