@@ -20,7 +20,7 @@
     @apply h-dvh min-h-dvh max-h-dvh flex flex-col;
 
     & > header {
-      @apply py-4 px-8 text-xl font-bold bg-neutral-900; 
+      @apply py-4 px-8 text-xl font-bold bg-neutral-900 flex flex-row justify-between items-center; 
     }
     & > main {
       @apply flex-1 flex flex-col justify-start items-center;

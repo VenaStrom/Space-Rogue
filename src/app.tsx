@@ -1,6 +1,7 @@
 import { Route } from "./types";
 import { WorkshopView, CombatView } from "./views";
 import { useMetaState } from "./context/meta-state";
+import { FullscreenIcon } from "lucide-react";
 
 function App() {
   const {
@@ -9,7 +10,28 @@ function App() {
 
   return (<>
     <header>
-      Space Rogue
+      <h2>
+        Space Rogue
+      </h2>
+
+      {/* Fullscreen button */}
+      <button
+        onClick={() => {
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch((e) => {
+              console.error("Failed to exit fullscreen:", e);
+            });
+          } else {
+            document.documentElement.requestFullscreen()
+              .catch((e) => {
+                console.error("Failed to enter fullscreen:", e);
+              });
+          }
+        }}
+        className="bg-transparent p-0"
+      >
+        <FullscreenIcon size={36} />
+      </button>
     </header>
 
     {/* Router */}

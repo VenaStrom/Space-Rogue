@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Camera, Ship } from "../rendering/combat";
+import { Camera, Ship, Starscape } from "../rendering/combat";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
@@ -7,6 +7,7 @@ function main(ctx: CanvasRenderingContext2D) {
   const ship = new Ship();
   ship.hookControls();
 
+  const starscape = new Starscape(4000, 4000);
   const camera = new Camera();
   // Start camera centered on ship
   camera.pos = { x: ship.position.x, y: ship.position.y };
@@ -44,6 +45,7 @@ function main(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, w, h);
 
     camera.applyTransform(ctx, w, h);
+    starscape.render(ctx);
     ship.render(ctx);
     camera.restoreTransform(ctx);
 
