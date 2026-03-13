@@ -65,7 +65,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements): () => void {
     // Update DOM HUD (direct textContent mutation avoids React re-renders)
     stats.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
     stats.physFrames.textContent = `${physSteps.toString().padStart(2, " ")} phys`;
-    stats.camZoom.textContent    = `${camera.zoom.toFixed(2)}x zoom`;
+    stats.camZoom.textContent = `${camera.zoom.toFixed(2)}x zoom`;
 
     rafHandle = window.requestAnimationFrame(frame);
   }
