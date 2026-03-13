@@ -3,7 +3,12 @@ import { Camera, Ship, Starscape } from "../rendering/combat";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
-function main(ctx: CanvasRenderingContext2D) {
+type StatsElements = {
+  renderFps: HTMLElement;
+  physFrames: HTMLElement;
+};
+
+function main(ctx: CanvasRenderingContext2D, stats: StatsElements) {
   const ship = new Ship();
   ship.hookControls();
 
@@ -21,20 +26,20 @@ function main(ctx: CanvasRenderingContext2D) {
 
   let lastTime = performance.now();
   let accumulatedMS = 0;
-  let renderFps = 0;
 
   function frame() {
     const now = performance.now();
     // Clamp to 100 ms to prevent a "spiral of death" after tab suspension
     const deltaMS = Math.min(now - lastTime, 100);
     lastTime = now;
-    renderFps = 1000 / deltaMS;
 
-    // Drain accumulator in fixed physics steps
+    // Drain accumulator in fixed physics steps; count steps per render frame
     accumulatedMS += deltaMS;
+    let physSteps = 0;
     while (accumulatedMS >= PHYS_STEP_MS) {
       ship.physicsUpdate(1); // delta=1 is always one fixed step
       accumulatedMS -= PHYS_STEP_MS;
+      physSteps++;
     }
 
     const { width: w, height: h } = ctx.canvas;
@@ -49,9 +54,9 @@ function main(ctx: CanvasRenderingContext2D) {
     ship.render(ctx);
     camera.restoreTransform(ctx);
 
-    // HUD drawn in screen space after restoring transform
-    ctx.fillStyle = "white";
-    ctx.fillText(`${Math.round(renderFps)} FPS`, 10, 20);
+    // Update DOM HUD (direct textContent mutation avoids React re-renders)
+    stats.renderFps.textContent = `${Math.round(1000 / deltaMS)} fps`;
+    stats.physFrames.textContent = `${physSteps} phys`;
 
     window.requestAnimationFrame(frame);
   }
@@ -61,29 +66,38 @@ function main(ctx: CanvasRenderingContext2D) {
 
 export function CombatView() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fpsRef = useRef<HTMLSpanElement>(null);
+  const physRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !fpsRef.current || !physRef.current) return;
 
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    main(ctx);
+    main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current });
   }, []);
 
   return <main>
     <h2>Combat</h2>
 
-    <canvas
-      ref={canvasRef}
-      height={600}
-      width={800}
-      className={`
-        bg-gray-900  
-        aspect-4/3
-        w-8/12
-        rounded-sm
-      `}
-    />
+    <div className="relative flex justify-center items-center max-w-fit">
+      <canvas
+        ref={canvasRef}
+        height={600}
+        width={800}
+        className={`
+          bg-gray-900
+          aspect-4/3
+          w-8/12
+          rounded-sm
+          block
+        `}
+      />
+      <div className="absolute top-2 left-2 text-white text-xs font-mono leading-tight pointer-events-none select-none">
+        <span ref={fpsRef}>-- fps</span><br />
+        <span ref={physRef}>-- phys</span>
+      </div>
+    </div>
   </main>;
 }
