@@ -1,4 +1,5 @@
 import type { SlotItem } from "../slots";
+import type { SlotType } from "./_consts";
 
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
@@ -17,8 +18,6 @@ export type Rect = {
   w: number;
   h: number;
 };
-
-export type SlotType = "weapon" | "thruster" | "misc" | "command" | "power";
 
 /**
  * A single equipment slot on the player's ship.

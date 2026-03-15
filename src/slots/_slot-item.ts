@@ -1,8 +1,10 @@
+import type { SlotType } from "../types";
 import { Angle } from "../rendering/utils";
 
 export abstract class SlotItem {
   abstract readonly id: string;
   abstract readonly name: string;
+  abstract readonly slotType: SlotType;
   readonly maxHealth: number = 1;
   readonly mass: number = 1;
 

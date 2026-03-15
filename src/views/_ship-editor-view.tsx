@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useGameState } from "../context/game-state";
-import type { ShipLoadout, Slot, SlotType, V2 } from "../types";
+import { SlotType, type ShipLoadout, type Slot, type V2 } from "../types";
 
 const VIEW_W = 300;
 const VIEW_H = 200;
@@ -11,23 +11,23 @@ const VIEW_BOX = `${VIEW_MIN_X} ${VIEW_MIN_Y} ${VIEW_W} ${VIEW_H}`;
 type Tool = "select" | "add-vertex" | "add-hardpoint";
 
 type DragState =
-  | { kind: "vertex";    idx: number;    mirrorIdx: number | null;    startPos: V2; svgStart: V2 }
+  | { kind: "vertex"; idx: number; mirrorIdx: number | null; startPos: V2; svgStart: V2 }
   | { kind: "hardpoint"; allIdx: number; mirrorAllIdx: number | null; startPos: V2; svgStart: V2 };
 
 const SLOT_FILL: Record<SlotType, string> = {
-  weapon:   "rgba(220,80,80,0.85)",
+  weapon: "rgba(220,80,80,0.85)",
   thruster: "rgba(80,140,220,0.85)",
-  misc:     "rgba(160,160,160,0.85)",
-  command:  "rgba(180,100,220,0.85)",
-  power:    "rgba(220,180,80,0.85)",
+  misc: "rgba(160,160,160,0.85)",
+  command: "rgba(180,100,220,0.85)",
+  power: "rgba(220,180,80,0.85)",
 };
 
 const SLOT_STROKE: Record<SlotType, string> = {
-  weapon:   "#f87171",
+  weapon: "#f87171",
   thruster: "#60a5fa",
-  misc:     "#9ca3af",
-  command:  "#c084fc",
-  power:    "#fbbf24",
+  misc: "#9ca3af",
+  command: "#c084fc",
+  power: "#fbbf24",
 };
 
 // Insert new vertex between the two hull vertices that define the closest edge
@@ -61,12 +61,12 @@ function findMirrorSlot(slots: Slot[], idx: number): number | null {
 
 function rebuildShip(hull: V2[], allSlots: Slot[]): ShipLoadout {
   return {
-    hullVertices:  hull,
-    weaponSlots:   allSlots.filter(s => s.type === "weapon"),
-    thrusterSlots: allSlots.filter(s => s.type === "thruster"),
-    miscSlots:     allSlots.filter(s => s.type === "misc"),
-    commandSlots:  allSlots.filter(s => s.type === "command"),
-    powerSlots:    allSlots.filter(s => s.type === "power"),
+    hullVertices: hull,
+    weaponSlots: allSlots.filter(s => s.type === SlotType.weapon),
+    thrusterSlots: allSlots.filter(s => s.type === SlotType.thruster),
+    miscSlots: allSlots.filter(s => s.type === SlotType.misc),
+    commandSlots: allSlots.filter(s => s.type === SlotType.command),
+    powerSlots: allSlots.filter(s => s.type === SlotType.power),
   };
 }
 
@@ -79,8 +79,13 @@ function isV2(v: unknown): v is V2 {
 function isSlot(s: unknown): s is Slot {
   if (typeof s !== "object" || s === null) return false;
   const o = s as Record<string, unknown>;
-  return (o.type === "weapon" || o.type === "thruster" || o.type === "misc"
-       || o.type === "command" || o.type === "power")
+  return (
+    o.type === SlotType.weapon
+    || o.type === SlotType.thruster
+    || o.type === SlotType.misc
+    || o.type === SlotType.command
+    || o.type === SlotType.power
+  )
     && o.item === null
     && isV2(o.hardpoint);
 }
@@ -88,20 +93,20 @@ function isSlot(s: unknown): s is Slot {
 function parseShipLoadout(raw: unknown): ShipLoadout | null {
   if (typeof raw !== "object" || raw === null) return null;
   const o = raw as Record<string, unknown>;
-  if (!Array.isArray(o.hullVertices)  || !o.hullVertices.every(isV2))    return null;
-  if (!Array.isArray(o.weaponSlots)   || !o.weaponSlots.every(isSlot))   return null;
+  if (!Array.isArray(o.hullVertices) || !o.hullVertices.every(isV2)) return null;
+  if (!Array.isArray(o.weaponSlots) || !o.weaponSlots.every(isSlot)) return null;
   if (!Array.isArray(o.thrusterSlots) || !o.thrusterSlots.every(isSlot)) return null;
-  if (!Array.isArray(o.miscSlots)     || !o.miscSlots.every(isSlot))     return null;
-  if (!Array.isArray(o.commandSlots)  || !o.commandSlots.every(isSlot))  return null;
-  if (!Array.isArray(o.powerSlots)    || !o.powerSlots.every(isSlot))    return null;
+  if (!Array.isArray(o.miscSlots) || !o.miscSlots.every(isSlot)) return null;
+  if (!Array.isArray(o.commandSlots) || !o.commandSlots.every(isSlot)) return null;
+  if (!Array.isArray(o.powerSlots) || !o.powerSlots.every(isSlot)) return null;
   if (o.hullVertices.length < 3) return null;
   return {
-    hullVertices:  o.hullVertices,
-    weaponSlots:   o.weaponSlots,
+    hullVertices: o.hullVertices,
+    weaponSlots: o.weaponSlots,
     thrusterSlots: o.thrusterSlots,
-    miscSlots:     o.miscSlots,
-    commandSlots:  o.commandSlots,
-    powerSlots:    o.powerSlots,
+    miscSlots: o.miscSlots,
+    commandSlots: o.commandSlots,
+    powerSlots: o.powerSlots,
   };
 }
 
@@ -113,11 +118,10 @@ function ToolBtn({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 text-xs transition-colors ${
-        active
-          ? "bg-gray-700 text-white"
-          : `bg-gray-900 ${accent ?? "text-gray-400"} hover:bg-gray-800`
-      }`}
+      className={`px-3 py-1.5 text-xs transition-colors ${active
+        ? "bg-gray-700 text-white"
+        : `bg-gray-900 ${accent ?? "text-gray-400"} hover:bg-gray-800`
+        }`}
     >
       {label}
     </button>
@@ -128,12 +132,12 @@ export function ShipEditorView() {
   const { playerShip, setPlayerShip } = useGameState();
   const [tool, setTool] = useState<Tool>("select");
   const [mirror, setMirror] = useState(true);
-  const [addSlotType, setAddSlotType] = useState<SlotType>("weapon");
+  const [addSlotType, setAddSlotType] = useState<SlotType>(SlotType.weapon);
 
-  const svgRef     = useRef<SVGSVGElement>(null);
-  const dragRef    = useRef<DragState | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragRef = useRef<DragState | null>(null);
   const didDragRef = useRef(false);
-  const importRef  = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   const hull = playerShip.hullVertices;
   const allSlots: Slot[] = [
@@ -162,8 +166,8 @@ export function ShipEditorView() {
     dragRef.current = {
       kind: "vertex", idx,
       mirrorIdx: mirror ? findMirrorVertex(hull, idx) : null,
-      startPos:  { ...hull[idx] },
-      svgStart:  getSvgPoint(e),
+      startPos: { ...hull[idx] },
+      svgStart: getSvgPoint(e),
     };
   }
 
@@ -174,8 +178,8 @@ export function ShipEditorView() {
     dragRef.current = {
       kind: "hardpoint", allIdx,
       mirrorAllIdx: mirror ? findMirrorSlot(allSlots, allIdx) : null,
-      startPos:     { ...allSlots[allIdx].hardpoint },
-      svgStart:     getSvgPoint(e),
+      startPos: { ...allSlots[allIdx].hardpoint },
+      svgStart: getSvgPoint(e),
     };
   }
 
@@ -194,16 +198,16 @@ export function ShipEditorView() {
 
     if (drag.kind === "vertex") {
       const newHull = hull.map((v, i) => {
-        if (i === drag.idx)                                       return { ...newPos };
-        if (drag.mirrorIdx !== null && i === drag.mirrorIdx)      return { x: newPos.x, y: -newPos.y };
+        if (i === drag.idx) return { ...newPos };
+        if (drag.mirrorIdx !== null && i === drag.mirrorIdx) return { x: newPos.x, y: -newPos.y };
         return v;
       });
       setPlayerShip(prev => ({ ...prev, hullVertices: newHull }));
 
     } else {
       const newSlots = allSlots.map((s, i) => {
-        if (i === drag.allIdx)                                         return { ...s, hardpoint: { ...newPos } };
-        if (drag.mirrorAllIdx !== null && i === drag.mirrorAllIdx)     return { ...s, hardpoint: { x: newPos.x, y: -newPos.y } };
+        if (i === drag.allIdx) return { ...s, hardpoint: { ...newPos } };
+        if (drag.mirrorAllIdx !== null && i === drag.mirrorAllIdx) return { ...s, hardpoint: { x: newPos.x, y: -newPos.y } };
         return s;
       });
       setPlayerShip(prev => rebuildShip(prev.hullVertices, newSlots));
@@ -269,12 +273,12 @@ export function ShipEditorView() {
     const roundV2 = (v: V2): V2 => ({ x: round(v.x), y: round(v.y) });
     const roundSlot = (s: Slot): Slot => ({ ...s, hardpoint: roundV2(s.hardpoint) });
     const clean: ShipLoadout = {
-      hullVertices:  playerShip.hullVertices.map(roundV2),
-      weaponSlots:   playerShip.weaponSlots.map(roundSlot),
+      hullVertices: playerShip.hullVertices.map(roundV2),
+      weaponSlots: playerShip.weaponSlots.map(roundSlot),
       thrusterSlots: playerShip.thrusterSlots.map(roundSlot),
-      miscSlots:     playerShip.miscSlots.map(roundSlot),
-      commandSlots:  playerShip.commandSlots.map(roundSlot),
-      powerSlots:    playerShip.powerSlots.map(roundSlot),
+      miscSlots: playerShip.miscSlots.map(roundSlot),
+      commandSlots: playerShip.commandSlots.map(roundSlot),
+      powerSlots: playerShip.powerSlots.map(roundSlot),
     };
     const blob = new Blob([JSON.stringify(clean, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -326,30 +330,29 @@ export function ShipEditorView() {
 
         {/* Tool selector */}
         <div className="flex rounded overflow-hidden border border-gray-700">
-          <ToolBtn label="Select (drag)" active={tool === "select"}       onClick={() => setTool("select")} />
-          <ToolBtn label="Add Vertex"    active={tool === "add-vertex"}    onClick={() => setTool("add-vertex")} />
+          <ToolBtn label="Select (drag)" active={tool === "select"} onClick={() => setTool("select")} />
+          <ToolBtn label="Add Vertex" active={tool === "add-vertex"} onClick={() => setTool("add-vertex")} />
           <ToolBtn label="Add Hardpoint" active={tool === "add-hardpoint"} onClick={() => setTool("add-hardpoint")} />
         </div>
 
         {/* Slot-type picker — only when add-hardpoint is active */}
         {tool === "add-hardpoint" && (
           <div className="flex rounded overflow-hidden border border-gray-700">
-            <ToolBtn label="Weapon"   active={addSlotType === "weapon"}   onClick={() => setAddSlotType("weapon")}   accent="text-red-400" />
-            <ToolBtn label="Thruster" active={addSlotType === "thruster"} onClick={() => setAddSlotType("thruster")} accent="text-blue-400" />
-            <ToolBtn label="Misc"     active={addSlotType === "misc"}     onClick={() => setAddSlotType("misc")}     accent="text-gray-400" />
-            <ToolBtn label="Command"  active={addSlotType === "command"}  onClick={() => setAddSlotType("command")}  accent="text-purple-400" />
-            <ToolBtn label="Power"    active={addSlotType === "power"}    onClick={() => setAddSlotType("power")}    accent="text-yellow-400" />
+            <ToolBtn label="Weapon" active={addSlotType === SlotType.weapon} onClick={() => setAddSlotType(SlotType.weapon)} accent="text-red-400" />
+            <ToolBtn label="Thruster" active={addSlotType === SlotType.thruster} onClick={() => setAddSlotType(SlotType.thruster)} accent="text-blue-400" />
+            <ToolBtn label="Misc" active={addSlotType === SlotType.misc} onClick={() => setAddSlotType(SlotType.misc)} accent="text-gray-400" />
+            <ToolBtn label="Command" active={addSlotType === SlotType.command} onClick={() => setAddSlotType(SlotType.command)} accent="text-purple-400" />
+            <ToolBtn label="Power" active={addSlotType === SlotType.power} onClick={() => setAddSlotType(SlotType.power)} accent="text-yellow-400" />
           </div>
         )}
 
         {/* Mirror toggle */}
         <button
           onClick={() => setMirror(m => !m)}
-          className={`px-3 py-1.5 text-xs rounded border transition-colors ${
-            mirror
-              ? "border-purple-600 bg-purple-950 text-purple-300"
-              : "border-gray-700 bg-gray-900 text-gray-500"
-          }`}
+          className={`px-3 py-1.5 text-xs rounded border transition-colors ${mirror
+            ? "border-purple-600 bg-purple-950 text-purple-300"
+            : "border-gray-700 bg-gray-900 text-gray-500"
+            }`}
         >
           Mirror
         </button>

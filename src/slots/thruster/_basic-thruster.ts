@@ -1,7 +1,9 @@
+import { SlotType } from "../../types";
 import { SlotItem } from "../_slot-item";
 
 export class BasicThrusterSlot extends SlotItem {
   static readonly id = "basic-thruster";
+  readonly slotType = SlotType.thruster;
   readonly id = BasicThrusterSlot.id;
   readonly name = "Basic Thruster";
 
