@@ -327,7 +327,14 @@ export function WorkshopView() {
         </div>
 
         {/* Inventory */}
-        <aside className="flex flex-col gap-y-2 overflow-y-auto min-w-50 px-2" style={{ maxHeight: PREVIEW_H }}>
+        <aside
+          className="flex flex-col gap-y-2 overflow-y-auto min-w-50 px-3 py-3 rounded-xl border border-gray-800 bg-gray-950 shadow-[inset_0_1px_0_rgba(148,163,184,0.06)]"
+          style={{
+            maxHeight: PREVIEW_H,
+            backgroundImage: 'radial-gradient(circle, rgba(148,163,184,0.055) 1px, transparent 1px)',
+            backgroundSize: '22px 22px',
+          }}
+        >
           <p className="text-xs uppercase tracking-widest text-gray-500">Inventory</p>
           {inventory.length === 0
             ? <p className="text-sm text-gray-700">Empty</p>
@@ -344,7 +351,13 @@ export function WorkshopView() {
       </section>
 
       {/* Slot lists */}
-      <section className="flex flex-row gap-x-15 overflow-y-auto flex-1 min-h-0 px-2">
+      <section
+        className="flex flex-row gap-x-15 overflow-y-auto flex-1 min-h-0 px-4 py-3 rounded-xl border border-gray-800 bg-gray-950 shadow-[inset_0_1px_0_rgba(148,163,184,0.06)]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(148,163,184,0.055) 1px, transparent 1px)',
+          backgroundSize: '22px 22px',
+        }}
+      >
         {slotGroups.map(({ type, slots }) => (
           <ul key={type} className="flex flex-col gap-y-2">
             {slots.map(({ slot, gi: globalIdx, li: localIdx }) => (
