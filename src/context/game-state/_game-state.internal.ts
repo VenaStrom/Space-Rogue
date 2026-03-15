@@ -10,12 +10,12 @@ export const defaultPlayerShip: ShipLoadout = {
     { x: -26.05, y: 35.95  },
   ],
   weaponSlots: [
-    { type: "weapon", item: null, hardpoint: { x: -5.03,  y: 18.76  } },
-    { type: "weapon", item: null, hardpoint: { x: -5.03,  y: -18.76 } },
+    { type: "weapon", item: null, hardpoint: { x: -4.25,  y: 18.76  } },
+    { type: "weapon", item: null, hardpoint: { x: -4.25,  y: -18.76 } },
     { type: "weapon", item: null, hardpoint: { x: -16.32, y: -22.56 } },
     { type: "weapon", item: null, hardpoint: { x: -16.32, y: 22.56  } },
-    { type: "weapon", item: null, hardpoint: { x: 6.8,    y: -14.37 } },
-    { type: "weapon", item: null, hardpoint: { x: 6.8,    y: 14.37  } },
+    { type: "weapon", item: null, hardpoint: { x: 7.58,   y: -14.11 } },
+    { type: "weapon", item: null, hardpoint: { x: 7.58,   y: 14.11  } },
   ],
   thrusterSlots: [
     { type: "thruster", item: null, hardpoint: { x: -31.35, y: -17.07 } },
