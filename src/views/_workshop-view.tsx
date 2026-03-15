@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameState } from "../context/game-state";
 import type { ShipLoadout, Slot, SlotType, V2 } from "../types";
 
@@ -12,20 +12,36 @@ function toCanvas(v: V2) {
   return { x: CX + v.x * SHIP_SCALE, y: CY + v.y * SHIP_SCALE };
 }
 
-const SLOT_ACCENT: Record<SlotType, string> = {
-  weapon: "border-red-800 hover:border-red-500",
-  thruster: "border-blue-800 hover:border-blue-500",
-  misc: "border-gray-600 hover:border-gray-400",
-  command: "border-purple-800 hover:border-purple-500",
-  power: "border-yellow-800 hover:border-yellow-500",
+const SLOT_BORDER_DIM: Record<SlotType, string> = {
+  weapon: "border-red-800",
+  thruster: "border-blue-800",
+  misc: "border-gray-600",
+  command: "border-purple-800",
+  power: "border-yellow-800",
 };
 
-const SLOT_LABEL: Record<SlotType, string> = {
+const SLOT_BORDER_ACTIVE: Record<SlotType, string> = {
+  weapon: "border-red-500",
+  thruster: "border-blue-500",
+  misc: "border-gray-400",
+  command: "border-purple-500",
+  power: "border-yellow-500",
+};
+
+const SLOT_SHORT_LABEL: Record<SlotType, string> = {
   weapon: "WPN",
   thruster: "THR",
   misc: "MSC",
   command: "CMD",
   power: "PWR",
+};
+
+const SLOT_FULL_LABEL: Record<SlotType, string> = {
+  weapon: "Weapon",
+  thruster: "Thruster",
+  misc: "Misc",
+  command: "Command",
+  power: "Power",
 };
 
 const HARDPOINT_COLOR: Record<SlotType, string> = {
@@ -87,20 +103,29 @@ function ShipPreview({ loadout }: { loadout: ShipLoadout }) {
   );
 }
 
-function SlotButton({ slot, index }: { slot: Slot; index: number }) {
-  const { x, y } = toCanvas(slot.hardpoint);
+function SlotButton({ slot, index, inline, isHovered, onEnter, onLeave }: {
+  slot: Slot; index: number; inline?: boolean;
+  isHovered: boolean; onEnter: () => void; onLeave: () => void;
+}) {
+  const { x, y } = inline ? { x: 0, y: 0 } : toCanvas(slot.hardpoint);
+  const border = isHovered ? SLOT_BORDER_ACTIVE[slot.type] : SLOT_BORDER_DIM[slot.type];
   return (
     <button
-      style={{ position: "absolute", left: x, top: y, transform: "translate(-50%, -50%)" }}
+      {...inline
+        ? {}
+        : { style: { position: "absolute", left: x, top: y, transform: "translate(-50%, -50%)" } }
+      }
       className={`
         border rounded bg-gray-950/80 w-14 h-14
         flex flex-col items-center justify-center gap-0.5
         transition-colors cursor-pointer
-        ${SLOT_ACCENT[slot.type]}
+        ${border}
       `}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
     >
       <span className="text-[9px] uppercase tracking-widest text-gray-500 leading-none">
-        {SLOT_LABEL[slot.type]} {index + 1}
+        {SLOT_SHORT_LABEL[slot.type]} {index + 1}
       </span>
       <span className={`text-[10px] leading-none ${slot.item !== null ? "text-green-400" : "text-gray-700"}`}>
         {slot.item !== null ? "EQ" : "—"}
@@ -109,8 +134,22 @@ function SlotButton({ slot, index }: { slot: Slot; index: number }) {
   );
 }
 
+function SlotCard({ slot, index, isHovered, onEnter, onLeave }: {
+  slot: Slot; index: number;
+  isHovered: boolean; onEnter: () => void; onLeave: () => void;
+}) {
+  return <li className="flex flex-row gap-x-2">
+    <SlotButton slot={slot} index={index} inline isHovered={isHovered} onEnter={onEnter} onLeave={onLeave} />
+    <div className="flex-1">
+      <p>{`${SLOT_FULL_LABEL[slot.type]} Slot ${index + 1}`}</p>
+      <p className={`${slot.item ? "" : "opacity-50"}`}>{`${slot.item ?? "Empty"}`}</p>
+    </div>
+  </li>
+}
+
 export function WorkshopView() {
   const { playerShip } = useGameState();
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const allSlots: Slot[] = [
     ...playerShip.weaponSlots,
@@ -120,15 +159,80 @@ export function WorkshopView() {
     ...playerShip.powerSlots,
   ];
 
+  let slotIndex = -1;
   return (
-    <main className="p-6">
-      <h2 className="text-lg font-semibold mb-6">Workshop</h2>
+    <main className="p-6 flex flex-col gap-6 h-dvh overflow-hidden">
+
+      {/* Preview */}
       <div className="relative inline-block" style={{ width: PREVIEW_W, height: PREVIEW_H }}>
         <ShipPreview loadout={playerShip} />
         {allSlots.map((slot, i) => (
-          <SlotButton key={i} slot={slot} index={i} />
+          <SlotButton
+            key={i} slot={slot} index={i}
+            isHovered={hoveredIdx === i}
+            onEnter={() => setHoveredIdx(i)}
+            onLeave={() => setHoveredIdx(null)}
+          />
         ))}
       </div>
+
+      {/* Lists */}
+      <section className="flex flex-row gap-x-15 overflow-y-auto flex-1 min-h-0 px-2">
+        <ul className="flex flex-col gap-y-2">
+          {playerShip.weaponSlots.map(slot => {
+            const idx = ++slotIndex;
+            return <SlotCard key={idx} slot={slot} index={idx}
+              isHovered={hoveredIdx === idx}
+              onEnter={() => setHoveredIdx(idx)}
+              onLeave={() => setHoveredIdx(null)}
+            />
+          })}
+        </ul>
+
+        <ul className="flex flex-col gap-y-2">
+          {playerShip.thrusterSlots.map(slot => {
+            const idx = ++slotIndex;
+            return <SlotCard key={idx} slot={slot} index={idx}
+              isHovered={hoveredIdx === idx}
+              onEnter={() => setHoveredIdx(idx)}
+              onLeave={() => setHoveredIdx(null)}
+            />
+          })}
+        </ul>
+
+        <ul className="flex flex-col gap-y-2">
+          {playerShip.miscSlots.map(slot => {
+            const idx = ++slotIndex;
+            return <SlotCard key={idx} slot={slot} index={idx}
+              isHovered={hoveredIdx === idx}
+              onEnter={() => setHoveredIdx(idx)}
+              onLeave={() => setHoveredIdx(null)}
+            />
+          })}
+        </ul>
+
+        <ul className="flex flex-col gap-y-2">
+          {playerShip.commandSlots.map(slot => {
+            const idx = ++slotIndex;
+            return <SlotCard key={idx} slot={slot} index={idx}
+              isHovered={hoveredIdx === idx}
+              onEnter={() => setHoveredIdx(idx)}
+              onLeave={() => setHoveredIdx(null)}
+            />
+          })}
+        </ul>
+
+        <ul className="flex flex-col gap-y-2">
+          {playerShip.powerSlots.map(slot => {
+            const idx = ++slotIndex;
+            return <SlotCard key={idx} slot={slot} index={idx}
+              isHovered={hoveredIdx === idx}
+              onEnter={() => setHoveredIdx(idx)}
+              onLeave={() => setHoveredIdx(null)}
+            />
+          })}
+        </ul>
+      </section>
     </main>
   );
 }
