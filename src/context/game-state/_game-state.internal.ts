@@ -3,25 +3,25 @@ import type { ShipLoadout } from "../../types";
 
 export const defaultPlayerShip: ShipLoadout = {
   hullVertices: [
-    { x: 67,    y: 0     },
+    { x: 67,     y: 0      },
     { x: -26.05, y: -35.95 },
-    { x: -33,   y: -25   },
-    { x: -33,   y: 25    },
-    { x: -26.05, y: 35.95 },
+    { x: -33,    y: -25    },
+    { x: -33,    y: 25     },
+    { x: -26.05, y: 35.95  },
   ],
   weaponSlots: [
     { type: "weapon", item: null, hardpoint: { x: -5.03,  y: 18.76  } },
     { type: "weapon", item: null, hardpoint: { x: -5.03,  y: -18.76 } },
-    { type: "weapon", item: null, hardpoint: { x: -20.22, y: -22.82 } },
-    { type: "weapon", item: null, hardpoint: { x: -20.22, y: 22.82  } },
-    { type: "weapon", item: null, hardpoint: { x: 9.92,   y: -14.63 } },
-    { type: "weapon", item: null, hardpoint: { x: 9.92,   y: 14.63  } },
+    { type: "weapon", item: null, hardpoint: { x: -16.32, y: -22.56 } },
+    { type: "weapon", item: null, hardpoint: { x: -16.32, y: 22.56  } },
+    { type: "weapon", item: null, hardpoint: { x: 6.8,    y: -14.37 } },
+    { type: "weapon", item: null, hardpoint: { x: 6.8,    y: 14.37  } },
   ],
   thrusterSlots: [
-    { type: "thruster", item: null, hardpoint: { x: -33.69, y: -16.29 } },
-    { type: "thruster", item: null, hardpoint: { x: -33.69, y: 16.29  } },
-    { type: "thruster", item: null, hardpoint: { x: -37.76, y: -5.31  } },
-    { type: "thruster", item: null, hardpoint: { x: -37.76, y: 5.31   } },
+    { type: "thruster", item: null, hardpoint: { x: -31.35, y: -17.07 } },
+    { type: "thruster", item: null, hardpoint: { x: -31.35, y: 17.07  } },
+    { type: "thruster", item: null, hardpoint: { x: -33.08, y: -7.13  } },
+    { type: "thruster", item: null, hardpoint: { x: -33.08, y: 7.13   } },
   ],
   miscSlots: [
     { type: "misc", item: null, hardpoint: { x: 37.31, y: 0 } },
@@ -29,8 +29,13 @@ export const defaultPlayerShip: ShipLoadout = {
     { type: "misc", item: null, hardpoint: { x: 23.91, y: 0 } },
     { type: "misc", item: null, hardpoint: { x: 10.14, y: 0 } },
   ],
-  commandSlots: [],
-  powerSlots: [],
+  commandSlots: [
+    { type: "command", item: null, hardpoint: { x: -16.09, y: -3.13 } },
+    { type: "command", item: null, hardpoint: { x: -16.09, y: 3.13  } },
+  ],
+  powerSlots: [
+    { type: "power", item: null, hardpoint: { x: -4.38, y: 0 } },
+  ],
 };
 
 export type GameStateContextType = {
