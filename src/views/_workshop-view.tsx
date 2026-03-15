@@ -327,7 +327,7 @@ export function WorkshopView() {
         </div>
 
         {/* Inventory */}
-        <aside className="flex flex-col gap-y-2 overflow-y-auto min-w-40" style={{ maxHeight: PREVIEW_H }}>
+        <aside className="flex flex-col gap-y-2 overflow-y-auto min-w-50 px-2" style={{ maxHeight: PREVIEW_H }}>
           <p className="text-xs uppercase tracking-widest text-gray-500">Inventory</p>
           {inventory.length === 0
             ? <p className="text-sm text-gray-700">Empty</p>
