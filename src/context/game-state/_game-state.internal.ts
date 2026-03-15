@@ -18,22 +18,6 @@ const defaultInventory: SlotItem[] = [
   new BasicThrusterSlot(),
   new BasicThrusterSlot(),
   new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
-  new BasicThrusterSlot(),
 ];
 
 export const defaultGameStateContext: GameStateContextType = {

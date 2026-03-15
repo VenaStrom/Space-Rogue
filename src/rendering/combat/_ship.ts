@@ -26,6 +26,9 @@ export class Ship {
   private hullVertices: V2[];
 
   private thrusters: ActiveThruster[];
+  /** Hull vertices at the trailing edge, used for RCS trails when no thrusters are equipped. */
+  private rcsPoints: V2[] = [];
+  private rcsTrails: V2[][] = [];
   /** Velocity added per forward-key physics step. */
   private readonly avgThrust: number;
   /** Max angular velocity in rad/step. */
@@ -73,9 +76,16 @@ export class Ship {
       this.avgMaxTurnPerStep =
         this.thrusters.reduce((sum, t) => sum + t.item.maxTurnRate, 0) / n / PHYSICS_HZ;
     } else {
-      // Fallback constants when no thrusters are equipped
-      this.avgThrust = 1;
-      this.avgMaxTurnPerStep = 0.045;
+      // No thrusters — very slow RCS-only movement
+      this.avgThrust = 0.15;
+      this.avgMaxTurnPerStep = (Math.PI / 4) / PHYSICS_HZ; // 45 deg/s
+
+      // Trailing vertices: those within 2 units of the most-negative x
+      const minX = Math.min(...this.hullVertices.map(v => v.x));
+      this.rcsPoints = this.hullVertices
+        .filter(v => v.x <= minX + 2)
+        .map(v => ({ ...v }));
+      this.rcsTrails = this.rcsPoints.map(() => []);
     }
   }
 
@@ -120,6 +130,20 @@ export class Ship {
         ctx.beginPath();
         ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
         ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+      }
+    }
+
+    for (const trail of this.rcsTrails) {
+      const n = trail.length;
+      if (n < 2) continue;
+      for (let i = 1; i < n; i++) {
+        const frac = i / (n - 1);
+        ctx.lineWidth = frac * 3;
+        ctx.strokeStyle = `rgba(255, 60, 60, ${frac * 0.65})`;
+        ctx.beginPath();
+        ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+        ctx.lineTo(trail[i].x, trail[i].y);
         ctx.stroke();
       }
     }
@@ -241,6 +265,19 @@ export class Ship {
         if (t.trail.length > t.item.trailLength) t.trail.shift();
       } else if (t.trail.length > 0) {
         t.trail.shift(); // drain trail when not thrusting
+      }
+    }
+
+    // RCS trails at trailing hull vertices (only active when no thrusters are equipped)
+    for (let i = 0; i < this.rcsPoints.length; i++) {
+      const pt = this.rcsPoints[i];
+      const wx = this.pos.x + pt.x * fwdCos - pt.y * fwdSin;
+      const wy = this.pos.y + pt.x * fwdSin + pt.y * fwdCos;
+      if (thrusting) {
+        this.rcsTrails[i].push({ x: wx, y: wy });
+        if (this.rcsTrails[i].length > 10) this.rcsTrails[i].shift();
+      } else if (this.rcsTrails[i].length > 0) {
+        this.rcsTrails[i].shift();
       }
     }
   }
