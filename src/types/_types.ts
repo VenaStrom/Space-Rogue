@@ -1,3 +1,5 @@
+import type { SlotItem } from "../slots";
+
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
 export type JSONObject = {
@@ -20,11 +22,10 @@ export type SlotType = "weapon" | "thruster" | "misc" | "command" | "power";
 
 /**
  * A single equipment slot on the player's ship.
- * `item` will become `ItemId | null` once items are implemented.
  */
 export type Slot = {
   type: SlotType;
-  item: null;
+  item: SlotItem | SlotItem["id"] | null;
   /** Ship-local coordinates of this mounting point (forward = +x, centroid at origin). */
   hardpoint: V2;
 };

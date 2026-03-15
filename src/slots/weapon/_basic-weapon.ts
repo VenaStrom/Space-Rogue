@@ -1,0 +1,12 @@
+import { Angle } from "../../rendering/utils";
+import { SlotItem } from "../";
+
+export class BasicWeaponSlot extends SlotItem {
+  static readonly id = "basic-weapon-slot";
+  readonly id = BasicWeaponSlot.id;
+  readonly name = "Basic Weapon Slot";
+  readonly maxHealth = 10;
+  readonly mass = 5;
+
+  currentAngle: Angle = Angle.zero;
+}

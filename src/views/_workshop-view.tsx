@@ -142,7 +142,7 @@ function SlotCard({ slot, index, isHovered, onEnter, onLeave }: {
     <SlotButton slot={slot} index={index} inline isHovered={isHovered} onEnter={onEnter} onLeave={onLeave} />
     <div className="flex-1">
       <p>{`${SLOT_FULL_LABEL[slot.type]} Slot ${index + 1}`}</p>
-      <p className={`${slot.item ? "" : "opacity-50"}`}>{`${slot.item ?? "Empty"}`}</p>
+      <p className={`${slot.item ? "" : "opacity-50"}`}>{slot.item === null ? "Empty" : typeof slot.item === "string" ? slot.item : slot.item.name}</p>
     </div>
   </li>
 }
