@@ -12,4 +12,10 @@
     "typescript",
     "typescriptreact"
   ],
+  "chat.tools.terminal.autoApprove": {
+    "/^source ~/\\.nvm/nvm\\.sh && yarn lint 2>&1$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  },
 }

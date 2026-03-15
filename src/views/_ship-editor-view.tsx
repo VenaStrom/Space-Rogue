@@ -18,12 +18,16 @@ const SLOT_FILL: Record<SlotType, string> = {
   weapon:   "rgba(220,80,80,0.85)",
   thruster: "rgba(80,140,220,0.85)",
   misc:     "rgba(160,160,160,0.85)",
+  command:  "rgba(180,100,220,0.85)",
+  power:    "rgba(220,180,80,0.85)",
 };
 
 const SLOT_STROKE: Record<SlotType, string> = {
   weapon:   "#f87171",
   thruster: "#60a5fa",
   misc:     "#9ca3af",
+  command:  "#c084fc",
+  power:    "#fbbf24",
 };
 
 // Insert new vertex between the two hull vertices that define the closest edge
@@ -61,6 +65,8 @@ function rebuildShip(hull: V2[], allSlots: Slot[]): ShipLoadout {
     weaponSlots:   allSlots.filter(s => s.type === "weapon"),
     thrusterSlots: allSlots.filter(s => s.type === "thruster"),
     miscSlots:     allSlots.filter(s => s.type === "misc"),
+    commandSlots:  allSlots.filter(s => s.type === "command"),
+    powerSlots:    allSlots.filter(s => s.type === "power"),
   };
 }
 
@@ -73,7 +79,8 @@ function isV2(v: unknown): v is V2 {
 function isSlot(s: unknown): s is Slot {
   if (typeof s !== "object" || s === null) return false;
   const o = s as Record<string, unknown>;
-  return (o.type === "weapon" || o.type === "thruster" || o.type === "misc")
+  return (o.type === "weapon" || o.type === "thruster" || o.type === "misc"
+       || o.type === "command" || o.type === "power")
     && o.item === null
     && isV2(o.hardpoint);
 }
@@ -81,16 +88,20 @@ function isSlot(s: unknown): s is Slot {
 function parseShipLoadout(raw: unknown): ShipLoadout | null {
   if (typeof raw !== "object" || raw === null) return null;
   const o = raw as Record<string, unknown>;
-  if (!Array.isArray(o.hullVertices)  || !o.hullVertices.every(isV2))   return null;
-  if (!Array.isArray(o.weaponSlots)   || !o.weaponSlots.every(isSlot))  return null;
+  if (!Array.isArray(o.hullVertices)  || !o.hullVertices.every(isV2))    return null;
+  if (!Array.isArray(o.weaponSlots)   || !o.weaponSlots.every(isSlot))   return null;
   if (!Array.isArray(o.thrusterSlots) || !o.thrusterSlots.every(isSlot)) return null;
-  if (!Array.isArray(o.miscSlots)     || !o.miscSlots.every(isSlot))    return null;
+  if (!Array.isArray(o.miscSlots)     || !o.miscSlots.every(isSlot))     return null;
+  if (!Array.isArray(o.commandSlots)  || !o.commandSlots.every(isSlot))  return null;
+  if (!Array.isArray(o.powerSlots)    || !o.powerSlots.every(isSlot))    return null;
   if (o.hullVertices.length < 3) return null;
   return {
     hullVertices:  o.hullVertices,
     weaponSlots:   o.weaponSlots,
     thrusterSlots: o.thrusterSlots,
     miscSlots:     o.miscSlots,
+    commandSlots:  o.commandSlots,
+    powerSlots:    o.powerSlots,
   };
 }
 
@@ -129,6 +140,8 @@ export function ShipEditorView() {
     ...playerShip.weaponSlots,
     ...playerShip.thrusterSlots,
     ...playerShip.miscSlots,
+    ...playerShip.commandSlots,
+    ...playerShip.powerSlots,
   ];
 
   function getSvgPoint(e: { clientX: number; clientY: number }): V2 {
@@ -260,6 +273,8 @@ export function ShipEditorView() {
       weaponSlots:   playerShip.weaponSlots.map(roundSlot),
       thrusterSlots: playerShip.thrusterSlots.map(roundSlot),
       miscSlots:     playerShip.miscSlots.map(roundSlot),
+      commandSlots:  playerShip.commandSlots.map(roundSlot),
+      powerSlots:    playerShip.powerSlots.map(roundSlot),
     };
     const blob = new Blob([JSON.stringify(clean, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -322,6 +337,8 @@ export function ShipEditorView() {
             <ToolBtn label="Weapon"   active={addSlotType === "weapon"}   onClick={() => setAddSlotType("weapon")}   accent="text-red-400" />
             <ToolBtn label="Thruster" active={addSlotType === "thruster"} onClick={() => setAddSlotType("thruster")} accent="text-blue-400" />
             <ToolBtn label="Misc"     active={addSlotType === "misc"}     onClick={() => setAddSlotType("misc")}     accent="text-gray-400" />
+            <ToolBtn label="Command"  active={addSlotType === "command"}  onClick={() => setAddSlotType("command")}  accent="text-purple-400" />
+            <ToolBtn label="Power"    active={addSlotType === "power"}    onClick={() => setAddSlotType("power")}    accent="text-yellow-400" />
           </div>
         )}
 
@@ -358,6 +375,8 @@ export function ShipEditorView() {
           <span><span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5 align-middle" />Weapon</span>
           <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1.5 align-middle" />Thruster</span>
           <span><span className="inline-block w-2 h-2 rounded-full bg-gray-400 mr-1.5 align-middle" />Misc</span>
+          <span><span className="inline-block w-2 h-2 rounded-full bg-purple-400 mr-1.5 align-middle" />Command</span>
+          <span><span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1.5 align-middle" />Power</span>
           <span className="text-gray-700">right-click = delete</span>
         </div>
       </div>

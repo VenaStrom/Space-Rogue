@@ -16,7 +16,7 @@ export type Rect = {
   h: number;
 };
 
-export type SlotType = "weapon" | "thruster" | "misc";
+export type SlotType = "weapon" | "thruster" | "misc" | "command" | "power";
 
 /**
  * A single equipment slot on the player's ship.
@@ -32,10 +32,9 @@ export type Slot = {
 export type ShipLoadout = {
   /** Polygon vertices in ship-local space (forward = +x, centroid at origin). */
   hullVertices: V2[];
-  /** 6 forward-facing weapon hardpoints. */
   weaponSlots: Slot[];
-  /** 4 engine/thruster bays. */
   thrusterSlots: Slot[];
-  /** 2 miscellaneous utility slots. */
   miscSlots: Slot[];
+  commandSlots: Slot[];
+  powerSlots: Slot[];
 };

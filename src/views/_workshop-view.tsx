@@ -16,18 +16,24 @@ const SLOT_ACCENT: Record<SlotType, string> = {
   weapon: "border-red-800 hover:border-red-500",
   thruster: "border-blue-800 hover:border-blue-500",
   misc: "border-gray-600 hover:border-gray-400",
+  command: "border-purple-800 hover:border-purple-500",
+  power: "border-yellow-800 hover:border-yellow-500",
 };
 
 const SLOT_LABEL: Record<SlotType, string> = {
   weapon: "WPN",
   thruster: "THR",
   misc: "MSC",
+  command: "CMD",
+  power: "PWR",
 };
 
 const HARDPOINT_COLOR: Record<SlotType, string> = {
   weapon: "rgba(220, 80, 80, 0.9)",
   thruster: "rgba(80, 140, 220, 0.9)",
   misc: "rgba(160, 160, 160, 0.9)",
+  command: "rgba(180, 100, 220, 0.9)",
+  power: "rgba(220, 180, 80, 0.9)",
 };
 
 function ShipPreview({ loadout }: { loadout: ShipLoadout }) {
@@ -41,17 +47,15 @@ function ShipPreview({ loadout }: { loadout: ShipLoadout }) {
 
     ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
 
-    const L = 100, W = 50;
-    const co = L / 3;
-
-    // Ship hull (nose pointing right / +x)
+    // Ship hull from loadout vertices
     ctx.fillStyle = "rgba(60, 100, 60, 0.4)";
     ctx.strokeStyle = "rgba(100, 200, 100, 0.7)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(CX + (L - co) * SHIP_SCALE, CY);
-    ctx.lineTo(CX + (-co) * SHIP_SCALE,    CY + (W / 2) * SHIP_SCALE);
-    ctx.lineTo(CX + (-co) * SHIP_SCALE,    CY - (W / 2) * SHIP_SCALE);
+    loadout.hullVertices.forEach((v, i) => {
+      const { x, y } = toCanvas(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -61,6 +65,8 @@ function ShipPreview({ loadout }: { loadout: ShipLoadout }) {
       ...loadout.weaponSlots,
       ...loadout.thrusterSlots,
       ...loadout.miscSlots,
+      ...loadout.commandSlots,
+      ...loadout.powerSlots,
     ];
     for (const slot of allSlots) {
       const { x, y } = toCanvas(slot.hardpoint);
@@ -110,6 +116,8 @@ export function WorkshopView() {
     ...playerShip.weaponSlots,
     ...playerShip.thrusterSlots,
     ...playerShip.miscSlots,
+    ...playerShip.commandSlots,
+    ...playerShip.powerSlots,
   ];
 
   return (
