@@ -1,4 +1,5 @@
 import type { ShipLoadout } from "../../types";
+import { BasicThrusterSlot } from "../../slots";
 
 export const CH_SLPShip: ShipLoadout = {
   hullVertices: [
@@ -17,10 +18,10 @@ export const CH_SLPShip: ShipLoadout = {
     { type: "weapon", item: null, hardpoint: { x: 7.58, y: 14.11 } },
   ],
   thrusterSlots: [
-    { type: "thruster", item: null, hardpoint: { x: -31.35, y: -17.07 } },
-    { type: "thruster", item: null, hardpoint: { x: -31.35, y: 17.07 } },
-    { type: "thruster", item: null, hardpoint: { x: -33.08, y: -7.13 } },
-    { type: "thruster", item: null, hardpoint: { x: -33.08, y: 7.13 } },
+    { type: "thruster", item: new BasicThrusterSlot(), hardpoint: { x: -31.35, y: -17.07 } },
+    { type: "thruster", item: new BasicThrusterSlot(), hardpoint: { x: -31.35, y: 17.07 } },
+    { type: "thruster", item: new BasicThrusterSlot(), hardpoint: { x: -33.08, y: -7.13 } },
+    { type: "thruster", item: new BasicThrusterSlot(), hardpoint: { x: -33.08, y: 7.13 } },
   ],
   miscSlots: [
     { type: "misc", item: null, hardpoint: { x: 37.31, y: 0 } },

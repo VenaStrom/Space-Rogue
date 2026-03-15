@@ -1,5 +1,5 @@
 import { Angle } from "../../rendering/utils";
-import { SlotItem } from "../";
+import { SlotItem } from "../_slot-item";
 
 export class BasicWeaponSlot extends SlotItem {
   static readonly id = "basic-weapon-slot";

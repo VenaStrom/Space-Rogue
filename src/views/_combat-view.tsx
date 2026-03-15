@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Camera, AsteroidBelt, Minimap, Ship, Starscape } from "../rendering/combat";
 import { useGameState } from "../context/game-state";
-import type { V2 } from "../types";
+import type { ShipLoadout } from "../types";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
@@ -11,8 +11,8 @@ type StatsElements = {
   camZoom: HTMLElement;
 };
 
-function main(ctx: CanvasRenderingContext2D, stats: StatsElements, initialHull: V2[]): () => void {
-  const ship = new Ship({ x: 550, y: 4000 }, initialHull);
+function main(ctx: CanvasRenderingContext2D, stats: StatsElements, initialLoadout: ShipLoadout): () => void {
+  const ship = new Ship({ x: 550, y: 4000 }, initialLoadout);
   ship.hookControls();
 
   const starscape = new Starscape(8000, 8000);
@@ -87,8 +87,8 @@ export function CombatView() {
   const physRef = useRef<HTMLSpanElement>(null);
   const zoomRef = useRef<HTMLSpanElement>(null);
   const { playerShip } = useGameState();
-  // Capture hull once at mount time — changes in the editor take effect on re-entering combat
-  const hullRef = useRef(playerShip.hullVertices);
+  // Capture loadout once at mount time — changes in the editor take effect on re-entering combat
+  const loadoutRef = useRef(playerShip);
 
   useEffect(() => {
     if (!canvasRef.current || !fpsRef.current || !physRef.current || !zoomRef.current) return;
@@ -96,7 +96,7 @@ export function CombatView() {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current }, hullRef.current);
+    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current }, loadoutRef.current);
   }, []);
 
   return <main>

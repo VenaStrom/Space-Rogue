@@ -1,4 +1,5 @@
-import type { V2 } from "../../types";
+import type { ShipLoadout, V2 } from "../../types";
+import { BasicThrusterSlot } from "../../slots";
 import { Angle } from "../utils";
 
 const DEFAULT_HULL: V2[] = [
@@ -7,12 +8,28 @@ const DEFAULT_HULL: V2[] = [
   { x: -33, y: 25 },
 ];
 
+/** A thruster slot that has been fully hydrated with a live item instance. */
+type ActiveThruster = {
+  hardpoint: V2;
+  item: BasicThrusterSlot;
+  trail: V2[];
+};
+
+const THRUST_SCALE = 0.08;
+const PHYSICS_HZ = 60;
+
 export class Ship {
   private pos: V2;
   private vel: V2 = { x: 0, y: 0 };
   private angle: Angle = Angle.zero;
   private angularVel = 0;
   private hullVertices: V2[];
+
+  private thrusters: ActiveThruster[];
+  /** Velocity added per forward-key physics step. */
+  private readonly avgThrust: number;
+  /** Max angular velocity in rad/step. */
+  private readonly avgMaxTurnPerStep: number;
 
   private get cosScale() { return Math.cos(this.angle.radians); }
   private get sinScale() { return Math.sin(this.angle.radians); }
@@ -23,10 +40,6 @@ export class Ship {
   public get shipLength(): number { return this.length; }
   public get colliderRadius(): number { return this.wingspan / 2; }
 
-  /**
-   * Displace the ship by (dx, dy) and cancel any velocity component pointing
-   * into the contact normal (nx, ny). Used by the collision resolver.
-   */
   public pushOut(dx: number, dy: number, nx: number, ny: number): void {
     this.pos.x += dx;
     this.pos.y += dy;
@@ -41,24 +54,35 @@ export class Ship {
   private wingspan = 50;
   private length = 100;
 
-  private readonly TRAIL_LEN = 60;
-  private trail: V2[] = [];
-
   private controlsHooked = false;
   private heldKeys: Set<string> = new Set();
   private keydownHook = (_e: KeyboardEvent) => { };
   private keyupHook = (_e: KeyboardEvent) => { };
 
-  constructor(pos: V2 = { x: 0, y: 0 }, hull: V2[] = DEFAULT_HULL) {
+  constructor(pos: V2 = { x: 0, y: 0 }, loadout?: ShipLoadout) {
     this.pos = pos;
-    this.hullVertices = hull;
+    this.hullVertices = loadout?.hullVertices ?? DEFAULT_HULL;
+
+    this.thrusters = (loadout?.thrusterSlots ?? [])
+      .filter((s): s is typeof s & { item: BasicThrusterSlot } => s.item instanceof BasicThrusterSlot)
+      .map(s => ({ hardpoint: s.hardpoint, item: s.item, trail: [] }));
+
+    if (this.thrusters.length > 0) {
+      const n = this.thrusters.length;
+      this.avgThrust = this.thrusters.reduce((sum, t) => sum + t.item.thrust, 0) / n;
+      this.avgMaxTurnPerStep =
+        this.thrusters.reduce((sum, t) => sum + t.item.maxTurnRate, 0) / n / PHYSICS_HZ;
+    } else {
+      // Fallback constants when no thrusters are equipped
+      this.avgThrust = 1;
+      this.avgMaxTurnPerStep = 0.045;
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D) {
-    this.renderTrail(ctx);
+    this.renderTrails(ctx);
 
     const originalFillStyle = ctx.fillStyle;
-
     ctx.fillStyle = this.color;
 
     const cos = Math.cos(this.angle.radians);
@@ -75,28 +99,29 @@ export class Ship {
     ctx.fill();
 
     this.debugRender(ctx);
-
     ctx.fillStyle = originalFillStyle;
   }
 
-  private renderTrail(ctx: CanvasRenderingContext2D): void {
-    const pts = this.trail;
-    const n = pts.length;
-    if (n < 2) return;
-
+  private renderTrails(ctx: CanvasRenderingContext2D): void {
     const prevLineWidth = ctx.lineWidth;
     const prevStrokeStyle = ctx.strokeStyle;
     const prevLineCap = ctx.lineCap;
     ctx.lineCap = "round";
 
-    for (let i = 1; i < n; i++) {
-      const t = i / (n - 1); // 0 = oldest, 1 = newest
-      ctx.lineWidth = t * 6;
-      ctx.strokeStyle = `rgba(128, 216, 255, ${(t * 0.75).toFixed(2)})`;
-      ctx.beginPath();
-      ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
-      ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.stroke();
+    for (const t of this.thrusters) {
+      const pts = t.trail;
+      const n = pts.length;
+      if (n < 2) continue;
+
+      for (let i = 1; i < n; i++) {
+        const frac = i / (n - 1); // 0 = oldest → 1 = newest
+        ctx.lineWidth = frac * t.item.trailWidth;
+        ctx.strokeStyle = t.item.trailColor(frac * 0.75);
+        ctx.beginPath();
+        ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
+        ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+      }
     }
 
     ctx.lineWidth = prevLineWidth;
@@ -107,31 +132,33 @@ export class Ship {
   public hookControls() {
     if (typeof window === "undefined") return;
     if (this.controlsHooked) return;
-
     this.controlsHooked = true;
-
     this.keydownHook = (e) => { this.heldKeys.add(e.key); };
     this.keyupHook = (e) => { this.heldKeys.delete(e.key); };
-
     window.addEventListener("keydown", this.keydownHook);
     window.addEventListener("keyup", this.keyupHook);
   }
 
+  public unhookControls() {
+    if (typeof window === "undefined") return;
+    if (!this.controlsHooked) return;
+    this.controlsHooked = false;
+    window.removeEventListener("keydown", this.keydownHook);
+    window.removeEventListener("keyup", this.keyupHook);
+  }
+
   public debugRender(ctx: CanvasRenderingContext2D) {
-    // Center dot
     ctx.fillStyle = "red";
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Velocity vector
     ctx.strokeStyle = "blue";
     ctx.beginPath();
     ctx.moveTo(this.pos.x, this.pos.y);
     ctx.lineTo(this.pos.x + this.vel.x * 10, this.pos.y + this.vel.y * 10);
     ctx.stroke();
 
-    // Lateral velocity vector (shows slip — cyan when over-turning)
     const cos = this.cosScale;
     const sin = this.sinScale;
     const vLat = this.vel.x * -sin + this.vel.y * cos;
@@ -141,46 +168,37 @@ export class Ship {
     ctx.lineTo(this.pos.x + (-sin) * vLat * 10, this.pos.y + cos * vLat * 10);
     ctx.stroke();
 
-    // Angular velocity arc
     ctx.strokeStyle = "magenta";
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, 30, this.angle.radians, this.angle.radians + this.angularVel * 100);
     ctx.stroke();
   }
 
-  public unhookControls() {
-    if (typeof window === "undefined") return;
-    if (!this.controlsHooked) return;
-
-    this.controlsHooked = false;
-    window.removeEventListener("keydown", this.keydownHook);
-    window.removeEventListener("keyup", this.keyupHook);
-  }
-
   public physicsUpdate(delta: number) {
     const cos = this.cosScale;
     const sin = this.sinScale;
 
-    // Thrust / brake along the ship's facing
+    let thrusting = false;
+
     if (
       this.heldKeys.has("w")
       || this.heldKeys.has("W")
       || this.heldKeys.has("ArrowUp")
     ) {
-      this.vel.x += cos * 0.08 * delta;
-      this.vel.y += sin * 0.08 * delta;
+      this.vel.x += cos * this.avgThrust * THRUST_SCALE * delta;
+      this.vel.y += sin * this.avgThrust * THRUST_SCALE * delta;
+      thrusting = true;
     }
     if (
       this.heldKeys.has("s")
       || this.heldKeys.has("S")
       || this.heldKeys.has("ArrowDown")
     ) {
-      this.vel.x -= cos * 0.06 * delta;
-      this.vel.y -= sin * 0.06 * delta;
+      this.vel.x -= cos * this.avgThrust * THRUST_SCALE * 0.75 * delta;
+      this.vel.y -= sin * this.avgThrust * THRUST_SCALE * 0.75 * delta;
     }
 
-    // Steering — angular velocity with a hard cap so the turn rate is finite
-    const maxTurn = 0.045;
+    const maxTurn = this.avgMaxTurnPerStep;
     if (
       this.heldKeys.has("a")
       || this.heldKeys.has("A")
@@ -195,21 +213,17 @@ export class Ship {
     ) {
       this.angularVel = Math.min(this.angularVel + 0.005 * delta, maxTurn);
     }
+
     this.angularVel *= 0.85;
     this.angle = this.angle.add(this.angularVel * delta);
 
-    // --- Plane-style directional drag ---
-    // Decompose velocity into the ship's (now-updated) forward and lateral axes.
-    // Heavy lateral drag steers velocity toward the new heading; the cost is
-    // proportional to how far the heading has rotated from the velocity vector,
-    // so over-turning bleeds speed hard.
-    const fwdCos = this.cosScale; // recalculate after angle update
+    const fwdCos = this.cosScale;
     const fwdSin = this.sinScale;
     const vFwd = this.vel.x * fwdCos + this.vel.y * fwdSin;
     const vLat = this.vel.x * -fwdSin + this.vel.y * fwdCos;
 
-    const dampedFwd = vFwd * 0.993; // gentle forward drag
-    const dampedLat = vLat * 0.65;  // heavy lateral drag — tight turns lose speed fast
+    const dampedFwd = vFwd * 0.993;
+    const dampedLat = vLat * 0.65;
 
     this.vel.x = dampedFwd * fwdCos - dampedLat * fwdSin;
     this.vel.y = dampedFwd * fwdSin + dampedLat * fwdCos;
@@ -217,7 +231,17 @@ export class Ship {
     this.pos.x += this.vel.x * delta;
     this.pos.y += this.vel.y * delta;
 
-    this.trail.push({ x: this.pos.x, y: this.pos.y });
-    if (this.trail.length > this.TRAIL_LEN) this.trail.shift();
+    // Update per-thruster trails at their world-space hardpoint positions
+    for (const t of this.thrusters) {
+      const wx = this.pos.x + t.hardpoint.x * fwdCos - t.hardpoint.y * fwdSin;
+      const wy = this.pos.y + t.hardpoint.x * fwdSin + t.hardpoint.y * fwdCos;
+
+      if (thrusting) {
+        t.trail.push({ x: wx, y: wy });
+        if (t.trail.length > t.item.trailLength) t.trail.shift();
+      } else if (t.trail.length > 0) {
+        t.trail.shift(); // drain trail when not thrusting
+      }
+    }
   }
 }
