@@ -190,6 +190,34 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
   high-variance loot.
 - Authorities and neutral traders exist outside the fighting-factions pool.
 
+## Narrative / premise (decided)
+
+The republic is sorta corrupt — which you discover. The outlaws are just blindly
+looking for loot. You're on your own between them.
+
+- **Opening:** you start in the republic capital, get wind of a plot, and steal a
+  crucial component of it. Being the righteous commander you are, you set out to find
+  the rebels and defeat them.
+- **The truth:** it's some convoluted inside job you're not privy to. Leadership can't
+  admit that, so they send you fetch quests every map to keep you busy while they
+  figure out how to stop you.
+- **Goals:** a goal per map/sector (the fetch quests), plus the overarching goal of
+  delivering something somewhere. Even endless needs something to aim for.
+- **Why you're unaligned:** you're not *against* the republic — you're just not
+  following orders.
+- **The visa gag:** command has "lost track of your ship number", so your military
+  pass won't work. The military police are awfully unwilling to listen to your
+  explanations about being on the same side, and remain that unstoppable force —
+  in an awfully bureaucratic way. The republic is too huge, faceless, and corrupt;
+  a go-getter gets punished for their efforts.
+- **Tone:** lighthearted on the surface even though things are going down behind the
+  scenes. The ship's commander is kinda dense; the *player* gradually learns what's
+  actually going on (dramatic irony as the narrative engine).
+- **Hard rule:** every action the republic takes against you must have some facade of
+  believability about why it's happening.
+
+Earlier candidate premises (rogue agent vs lone courier) merged into the above.
+
 ## Progression
 
 - Hull unlocks on death.

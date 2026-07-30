@@ -58,7 +58,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **The arena fights back.** Collisions and ramming deal real damage (ramming builds are a legitimate, silly option), sectors bring environmental hazards (minefields, radiation, gravity wells), and terrain is usable — block shots behind asteroids, lure enemies into hazards.
 
-**Light worldbuilding.** No framed campaign: factions, the authorities, and events carry an implicit world, with room for recurring characters and threads across runs. Lore lives in item and event text.
+**Light worldbuilding, one framing premise.** You're a republic commander who stumbled onto a plot, stole a crucial component of it, and set out to hunt the "rebels" behind it — not realizing it's an inside job your own leadership can't admit to. They keep you busy with a fetch quest per sector while they figure out how to stop you; the overarching goal is delivering what you carry. Command has conveniently "lost track of your ship number" (hence the visas), and the military police won't hear your explanations — an unstoppable force that's on paper your own side, in an awfully bureaucratic way. The tone stays lighthearted while dark things happen behind the scenes: the commander is kinda dense, the player slowly figures it out, and every move the republic makes against you keeps a facade of believability. Beyond that, lore lives in item and event text.
 
 **Events come in two tiers.** Mostly short FTL-style text events — a paragraph, a few choices; plus a rarer tier of playable arena scenarios (escorts, salvage under pressure, and the like).
 
@@ -111,7 +111,6 @@ Raw spitball ideas — item examples, archetypes, variants — are collected in 
 ### Open questions
 
 - Jump-visa tuning: pricing, availability, and exactly how the authorities behave once summoned.
-- The in-universe reason you keep pressing on through gate after gate.
 - Art direction — programmer-art polygons until the mechanics prove out, then decide.
 - How shield zones, armor areas, and component targeting interact in practice.
 - Faction count, identities, and how faction tech trees differ mechanically.
