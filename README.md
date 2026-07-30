@@ -42,7 +42,23 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **The map is open, but lollygagging costs you.** Harbinger-style sector hopping rather than a one-way branching path. The pressure resource is the **jump visa**: jumping legally requires one, and they're bought and collected during play. Jump without one and you summon the authorities — massively overpowered, likely lethal, and they chase you. Runs are structured as chained sectors with exit gates: effectively endless, death is the ending.
 
+**Authorities are shakeable heat, contained per sector.** Once summoned they stay on the current sector map and know about you — a standing hazard occupying systems you now shouldn't jump into. Heat can be shed, and they don't follow you to the next sector; the exit gate is a hard reset on your record.
+
+**No set bosses.** Difficulty comes from escalating regular encounters, not designed boss fights.
+
+**Sectors are themed.** Each sector rolls an identity — nebula sensor fog, dense asteroid belts, faction territory, derelict fields — that shapes its arenas and encounters.
+
+**Difficulty is custom run mods.** Player-picked run modifiers (mutators) that trade extra difficulty for reward multipliers, rather than fixed difficulty presets or an ascension ladder.
+
 **Weapons: no ammo, twin-stick aim within arcs.** No consumable ammunition anywhere — fire rate and power are the only limits. Under direct piloting you aim with the mouse cursor, twin-stick style, but each hardpoint respects its firing arc.
+
+**Slow-mo, not pause.** Issuing orders dilates time rather than stopping it — the pressure stays on, but you can think. No full tactical pause.
+
+**Light fog of war.** Unexplored map nodes are unknown and the arena minimap has range limits, but there's no stealth/cloaking layer — clarity over ambush gameplay.
+
+**The arena fights back.** Collisions and ramming deal real damage (ramming builds are a legitimate, silly option), sectors bring environmental hazards (minefields, radiation, gravity wells), and terrain is usable — block shots behind asteroids, lure enemies into hazards.
+
+**Light worldbuilding.** No framed campaign: factions, the authorities, and events carry an implicit world, with room for recurring characters and threads across runs. Lore lives in item and event text.
 
 **Events come in two tiers.** Mostly short FTL-style text events — a paragraph, a few choices; plus a rarer tier of playable arena scenarios (escorts, salvage under pressure, and the like).
 

@@ -49,6 +49,13 @@ the distilled decisions live in the README; this is the raw material. Add freely
 - Hangars are equippable slot items; fighters launch, fight autonomously, can be lost
   and replaced. Fighter builds should be very viable despite single-ship control.
 
+## Combat arena
+
+- Ramming builds should be viable (and silly) — collision damage is real, which
+  implies ram-plating / reinforced-prow style items eventually.
+- Terrain as a weapon: asteroids block shots, hazards can be lured into.
+- Slow-mo (never pause) while issuing orders — could scale with bridge quality?
+
 ## Item system meta
 
 - Wide categories → distinct subcategories → variants, each with their own identity.
@@ -80,6 +87,11 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 - The authorities double as an untouchable-tier faction; illegal jumping is the
   player-triggered doom clock.
 - Jumping legally is thus an economic decision — visa cost competes with gear.
+- Summoned authorities stay on the sector map and know of you: they occupy systems
+  (don't jump into theirs), heat is shakeable, and they never follow through the exit
+  gate — leaving the sector wipes your record.
+- Sector themes: nebula (sensor fog), dense asteroid belts, faction territory,
+  derelict fields — theme shapes arenas and encounters.
 
 ## Progression
 
