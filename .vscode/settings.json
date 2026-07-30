@@ -3,6 +3,7 @@
     "grayscale",
     "HARDPOINT",
     "hardpoints",
+    "remixicon",
     "Starscape"
   ],
   "eslint.useFlatConfig": true,

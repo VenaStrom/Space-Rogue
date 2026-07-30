@@ -1,7 +1,7 @@
 import { Route } from "./types";
 import { WorkshopView, CombatView, ShipEditorView } from "./views";
 import { useMetaState } from "./context/meta-state";
-import { FullscreenIcon } from "lucide-react";
+import { RiFullscreenLine } from "@remixicon/react";
 
 const NAV_ROUTES: { label: string; route: Route }[] = [
   { label: "Workshop", route: Route.Workshop },
@@ -55,7 +55,7 @@ function App() {
         }}
         className="bg-transparent p-0"
       >
-        <FullscreenIcon size={36} />
+        <RiFullscreenLine size={36} />
       </button>
     </header>
 
