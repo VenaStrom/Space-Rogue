@@ -32,7 +32,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Items really affect the playstyle.** The guiding pillar: equipment shouldn't just be stat bumps — what you slot changes *how you play*. The command slot deciding your control scheme, hangars turning you into a carrier, targeting computers changing how you aim: that pattern should run through the whole item pool.
 
-**Control is defined by your command slot.** A *cockpit* gives direct piloting; a *command bridge* gives strategic/tactical orders; a *computer* automates the arena entirely — each computer ships with its own doctrine and usually extra buffs to counter that rigidity, while strategic decisions (like when to jump) stay yours. Flavors of each allow or disallow manual weapon control in exchange for buffs. Starting ships get direct control with auto-tracking, auto-firing turrets so new players aren't punished for not doing everything at once.
+**Control is defined by your command slot.** A *cockpit* gives direct piloting; a *command bridge* gives strategic/tactical orders; a *computer* automates the arena entirely — each computer ships with its own doctrine and usually extra buffs to counter that rigidity, while strategic decisions (like when to jump) stay yours. Flavors of each allow or disallow manual weapon control in exchange for buffs. The bridge's order vocabulary is deliberately lean: plot nav points (bridge quality decides how many) and designate a focus target — everything else is automatic. Starting ships get direct control with auto-tracking, auto-firing turrets so new players aren't punished for not doing everything at once.
 
 **Damage is per-component.** Shields protect the whole ship but have zones. Slotted items take individual damage and can be knocked out. Advanced targeting computers — or plain skill when firing manually — let you aim at specific enemy components. The hull almost always takes chip damage through it all, and hulls have directional armor areas (e.g. thicker plating up front), so facing matters.
 
@@ -40,7 +40,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Single ship, but fighters are first-class.** No fleet control — instead hangars are equippable slot items. Fighters launch, fight autonomously, and can be lost and replaced. Fighter builds should be very viable.
 
-**The map is open, but lollygagging costs you.** Harbinger-style sector hopping rather than a one-way branching path. The pressure resource is the **jump visa**: jumping legally requires one, and they're bought and collected during play. Jump without one and you summon the authorities — massively overpowered, likely lethal, and they chase you. Runs are structured as chained sectors with exit gates: effectively endless, death is the ending.
+**The map is open, but lollygagging costs you.** Harbinger-style sector hopping rather than a one-way branching path. The pressure resource is the **jump visa**: jumping legally requires one, and they're bought and collected during play. Jump without one and you summon the authorities — massively overpowered, likely lethal, and they chase you. Runs are structured as chained sectors with exit gates: effectively endless, death is the ending. The exit is literally a **jump gate** — it slings you to another system, and the next sector begins.
 
 **Authorities are shakeable heat, contained per sector.** Once summoned they stay on the current sector map and know about you — a standing hazard occupying systems you now shouldn't jump into. Heat can be shed, and they don't follow you to the next sector; the exit gate is a hard reset on your record.
 
@@ -48,7 +48,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Sectors are themed.** Each sector rolls an identity — nebula sensor fog, dense asteroid belts, faction territory, derelict fields — that shapes its arenas and encounters.
 
-**Difficulty is custom run mods.** Player-picked run modifiers (mutators) that trade extra difficulty for reward multipliers, rather than fixed difficulty presets or an ascension ladder.
+**Difficulty is custom run mods.** Player-picked run modifiers (mutators) that trade extra difficulty for reward multipliers, rather than fixed difficulty presets or an ascension ladder. All four flavors are in scope: economic screws (pricier visas, stingier salvage), combat modifiers (higher enemy grades, denser fights), rule twists (no shield regen in combat, drives that never charge under fire), and reward doublers as the payoff side.
 
 **Weapons: no ammo, twin-stick aim within arcs.** No consumable ammunition anywhere — fire rate and power are the only limits. Under direct piloting you aim with the mouse cursor, twin-stick style, but each hardpoint respects its firing arc.
 
@@ -94,11 +94,11 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Stations are immobile hulls.** Stations physically exist in their node's arena, armed — if enemies show up, you fight with the station present. They're built as hulls without movement, marked as stations. But commerce doesn't require the arena: a UI on the map screen handles the shopping unless there's a reason to be there. Each station spawns belonging to a faction — drawn from the fighting factions plus a neutral-traders pool — and you have **reputation** with that faction. Rep is deliberately shallow: it persists for the whole run (unlike heat), good rep from quests and events slightly improves prices, and bad rep past a threshold just means aggression.
 
-**Run starts: safe orientations or a daring draft.** Pick an unlocked hull, then either a static orientation (a coherent starter kit) with rolling effects for variety — or, for the daring, draft starting items from a random offering with no guarantee of synergy. (Permanent-loadout trophies come along per the meta-progression rules.)
+**Run starts: safe orientations or a daring draft.** Pick an unlocked hull, then either a static orientation (a coherent starter kit) with rolling effects for variety — or, for the daring, draft starting items from a random offering with no guarantee of synergy. Initial orientations: **Gunner** (cockpit + sustained guns), **Skirmisher** (cockpit + dancer thrusters + burst weapons), **Commander** (bridge + starter fighter wing). A computer-based orientation is deliberately not a starter. (Permanent-loadout trophies come along per the meta-progression rules.)
 
 **Audio: diegetic minimal.** Ship hums, radio chatter, muffled space combat; music sparse and situational.
 
-**Distinct tech factions.** Multiple factions with visually and mechanically distinct hulls and equipment — loot reflects who you fought. (The repo's `ships/republic/` folder is the first of these.)
+**Distinct tech factions — start with two, design for N.** Factions have visually and mechanically distinct hulls and equipment, and loot reflects who you fought. Two factions ship first — the republic's balanced, reliable gear versus an outlaw **unstable overdrive** identity (stronger effects with nasty counterbalances: unstable jump drives, overcharged reactors, glass weapons — high-variance loot) — but the faction system (tech identity, reputation, spawn pools) is built to take additions cheaply. (The repo's `ships/republic/` folder is the first of these.)
 
 **Meta-progression: hulls and trophies.** Dying can unlock new starting hulls. Certain items — legendary finds, achievement rewards — can be added to your permanent starting loadout.
 
@@ -111,6 +111,7 @@ Raw spitball ideas — item examples, archetypes, variants — are collected in 
 ### Open questions
 
 - Jump-visa tuning: pricing, availability, and exactly how the authorities behave once summoned.
+- The in-universe reason you keep pressing on through gate after gate.
 - Art direction — programmer-art polygons until the mechanics prove out, then decide.
 - How shield zones, armor areas, and component targeting interact in practice.
 - Faction count, identities, and how faction tech trees differ mechanically.

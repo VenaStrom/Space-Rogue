@@ -16,6 +16,13 @@ the distilled decisions live in the README; this is the raw material. Add freely
   in the arena it does whatever it does.
 - Bridges almost always allow fighter command, with varying efficacy; cockpits
   generally don't.
+- Bridge order vocabulary: nav points + focus target only. Bridge quality = how many
+  nav points you can plot. Everything else automatic.
+- Computer doctrine sketches: range keeper (holds the engagement band its weapons
+  dictate), berserker (always closes, focuses nearest/weakest, zero self-preservation,
+  huge buffs), turtle (shield facing + point defense, wins by attrition, can't chase),
+  opportunist (fires at whatever component is most exposed across all enemies —
+  chaotic but surgical).
 
 ## Items — shields
 
@@ -115,6 +122,11 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 
 - Hulls have cargo space — a capacity stat. Salvage UI: items in space on one side,
   your hold on the other; transfer to keep/discard. Arena-wide reach, out of combat only.
+- Hull archetype roster: fighter/interceptor (few slots, high-grade hookups, glass
+  cannon), cruiser/gunship (the balanced tutorial-shaped baseline), carrier (reserved
+  hangar mounts, weak direct weapons), freighter (lots of cargo *and* power — not
+  inherently a warship, but throw on shields and heavy weapons and you can craft one;
+  also the multiple-loadouts toolbox).
 - Cargo capacity is a hull stat for sure, but with a reasonable minimum — more flavor
   than gameplay-deciding.
 - Items swappable at any time outside combat → a freighter can almost carry multiple
@@ -138,6 +150,17 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 - Mix of options at run start: static orientations (coherent kits) with rolling
   effects for variety — or, for the daring, a draft with no guarantee of item synergy.
 - Draft-as-risk is a difficulty/reward lever in itself.
+- Initial orientation kits: Gunner (cockpit + sustained-DPS guns), Skirmisher
+  (cockpit + dancer thrusters + burst weapons), Commander (bridge + starter fighter
+  wing). No computer-based starter — doctrine computers are found/bought mid-run.
+
+## Run mutators
+
+- Economic screws: pricier visas, stingier salvage, higher repair costs.
+- Combat modifiers: enemies up a grade tier, denser fights, faster enemy fighters.
+- Rule twists: no shield regen in combat, jump drives never charge in combat,
+  draft-only starts.
+- Reward doublers: loot rarity/quantity multipliers as the greed side of the trade.
 
 ## Map / run
 
@@ -151,8 +174,21 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 - Summoned authorities stay on the sector map and know of you: they occupy systems
   (don't jump into theirs), heat is shakeable, and they never follow through the exit
   gate — leaving the sector wipes your record.
+- Exit gate is literally a jump gate: it slings you to another system. (Supersedes an
+  earlier visa-checkpoint idea for the gate; regular jumps still use visas.)
+- Open: the in-universe reason to keep going forward, gate after gate. No answer yet.
 - Sector themes: nebula (sensor fog), dense asteroid belts, faction territory,
   derelict fields — theme shapes arenas and encounters.
+
+## Factions
+
+- Start with two factions, but design the faction system (tech identity, rep, spawn
+  pools) so additions are cheap.
+- Faction #1: the republic — balanced, reliable gear.
+- Faction #2: outlaw "unstable overdrive" tech — stronger effects with nasty
+  counterbalances (unstable jump drives, overcharged reactors, glass weapons);
+  high-variance loot.
+- Authorities and neutral traders exist outside the fighting-factions pool.
 
 ## Progression
 
