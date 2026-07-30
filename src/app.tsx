@@ -76,8 +76,9 @@ function App() {
       }
     })()}
 
-    <footer>
-      © 2026 Vena Ström
+    <footer className="flex justify-between">
+      <span>© 2026 Vena Ström</span>
+      <span>Built {__BUILD_DATE__} · {__GIT_HASH__}</span>
     </footer>
   </>);
 }
