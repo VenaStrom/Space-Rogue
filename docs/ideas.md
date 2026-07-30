@@ -11,6 +11,8 @@ the distilled decisions live in the README; this is the raw material. Add freely
 - Cockpit = direct piloting, bridge = strategic orders; flavors of each allow/disallow
   manual weapon control in exchange for buffs.
 - "Computer" as a third command subcategory is a maybe — role unclear, revisit.
+- Bridges almost always allow fighter command, with varying efficacy; cockpits
+  generally don't.
 
 ## Items — shields
 
@@ -46,6 +48,18 @@ the distilled decisions live in the README; this is the raw material. Add freely
   actual number for the nerds; each grade tier = a cap per stat category.
 - Procedural generation at dev time only: generate → curate → freeze. Different
   generation algorithms per subcategory / shape / archetype.
+- Items interact across slots, and the UI must be clear about compatibility problems:
+  notifications like "your shields have the redistribute feature but your reactor or
+  bridge doesn't support it", or "hangar equipped but no bridge to command fighters".
+  How many parts need to be in agreement for a feature to work is undecided — don't
+  want to lock builds down too much.
+- Some effects are specialized enough to dictate the item's *name* (e.g. command
+  capability on a cockpit makes it a "squad leader cockpit"). These name-dictating
+  specialized effects are mutually exclusive with each other — gated by rank: e.g.
+  command + another specialized effect on a cockpit are mutually exclusive at
+  common–epic, but can coexist on a legendary.
+
+Specific item ideas live in [item-ideas.md](item-ideas.md).
 
 ## Map / run
 

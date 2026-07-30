@@ -46,6 +46,8 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Items compose from a large effect pool.** Many small effect building blocks exist; a common item uses just one or two of them with counterbalancing debuffs, while rarer items carry stronger buffs (and fewer strings attached). Rarity is about how much of the effect pool an item taps and how cleanly.
 
+**Items interact — and the UI owns the confusion.** Equipment features can depend on other slots (a shield's redistribute feature needs a reactor/bridge that supports it; hangars need something that can command fighters). The UI must make compatibility problems obvious with clear notifications, never silent failure. How strict the agreement requirements are is deliberately loose — builds shouldn't be locked down too hard.
+
 **Stats read dumb, numbers for the nerds.** Ratings are described in plain terms — "bad", "poor", "fine", "good", "super" — so you don't have to think too much, with the actual number still there for the nerds. Grades are honest: in procedural generation, each rating tier corresponds to a cap per stat category.
 
 **Item generation is procedural at dev time only.** Items get procedurally generated during development as a design aid — then hand-curated and frozen into the game's fixed item pool when they're good. Players never see a random item; they see the keepers. Each subcategory can have its own generation algorithms keyed off its stat shape.
