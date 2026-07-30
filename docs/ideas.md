@@ -82,7 +82,11 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 
 - Hulls have cargo space — a capacity stat. Salvage UI: items in space on one side,
   your hold on the other; transfer to keep/discard. Arena-wide reach, out of combat only.
-- Cargo capacity as another hull differentiator (freighter-y hulls vs lean fighters).
+- Cargo capacity is a hull stat for sure, but with a reasonable minimum — more flavor
+  than gameplay-deciding.
+- Items swappable at any time outside combat → a freighter can almost carry multiple
+  loadouts and reconfigure per encounter. Cargo becomes a flexibility stat, not a
+  loot-volume stat.
 
 ## Stations
 
@@ -90,6 +94,15 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
   node's arena, and part of the fight if one breaks out there.
 - Reusing the hull/slot system for stations means station variety is item variety.
 - Attacking a station yourself: presumably possible and presumably summons heat?
+- Stations spawn belonging to a faction, drawn from the fighting factions + a
+  neutral-traders pool — and you have rep with that faction. (First appearance of a
+  reputation system: shop prices? hostility? access?)
+
+## Run start
+
+- Mix of options at run start: static orientations (coherent kits) with rolling
+  effects for variety — or, for the daring, a draft with no guarantee of item synergy.
+- Draft-as-risk is a difficulty/reward lever in itself.
 
 ## Map / run
 

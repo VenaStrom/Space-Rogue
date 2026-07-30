@@ -84,11 +84,11 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Economy: salvage, shops, events.** Destroyed enemies drop salvage in the arena; station nodes have shops with currency-based trade; non-combat events (distress calls, anomalies) pay out for choices and risk. No crafting.
 
-**Salvage runs through cargo space.** Hulls have cargo holds. Out of combat, a UI shows items floating in space alongside your hold, and you move what you want to keep or discard — collection can be arena-wide, but never during combat.
+**Salvage runs through cargo space.** Hulls have cargo holds. Out of combat, a UI shows items floating in space alongside your hold, and you move what you want to keep or discard — collection can be arena-wide, but never during combat. Cargo is definitely a hull stat, but with a reasonable minimum everywhere: more flavor than gameplay-deciding. What makes it matter is that **items can be swapped freely any time outside combat** — so a big-holded freighter can effectively carry multiple loadouts.
 
-**Stations are immobile hulls.** Stations physically exist in their node's arena, armed — if enemies show up, you fight with the station present. They're built as hulls without movement, marked as stations. But commerce doesn't require the arena: a UI on the map screen handles the shopping unless there's a reason to be there.
+**Stations are immobile hulls.** Stations physically exist in their node's arena, armed — if enemies show up, you fight with the station present. They're built as hulls without movement, marked as stations. But commerce doesn't require the arena: a UI on the map screen handles the shopping unless there's a reason to be there. Each station spawns belonging to a faction — drawn from the fighting factions plus a neutral-traders pool — and you have **reputation** with that faction.
 
-**Runs open with a draft.** Pick an unlocked hull, then draft starting items from a small random offering — every run opens differently. (Permanent-loadout trophies come along per the meta-progression rules.)
+**Run starts: safe orientations or a daring draft.** Pick an unlocked hull, then either a static orientation (a coherent starter kit) with rolling effects for variety — or, for the daring, draft starting items from a random offering with no guarantee of synergy. (Permanent-loadout trophies come along per the meta-progression rules.)
 
 **Audio: diegetic minimal.** Ship hums, radio chatter, muffled space combat; music sparse and situational.
 
