@@ -78,6 +78,10 @@ function App() {
 
     <footer className="flex justify-between">
       <span>© 2026 Vena Ström</span>
+      <span>
+        Icons by <a href="https://remixicon.com" target="_blank" rel="noreferrer">Remix Icon</a> and{" "}
+        <a href="https://game-icons.net" target="_blank" rel="noreferrer">game-icons.net</a> (CC BY 3.0)
+      </span>
       <span>Built {__BUILD_DATE__} · {__GIT_HASH__}</span>
     </footer>
   </>);
