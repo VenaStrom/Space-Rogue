@@ -3,7 +3,7 @@ import { Route } from "../../types";
 import { MetaStateContext } from "./_meta-state.internal";
 
 export function MetaStateProvider({ children }: { children: React.ReactNode }) {
-  const [route, setRoute] = useState<Route>(Route.workshop);
+  const [route, setRoute] = useState<Route>(Route.Workshop);
 
   return <MetaStateContext.Provider value={{
     route,

@@ -4,9 +4,9 @@ import { useMetaState } from "./context/meta-state";
 import { FullscreenIcon } from "lucide-react";
 
 const NAV_ROUTES: { label: string; route: Route }[] = [
-  { label: "Workshop", route: Route.workshop },
-  { label: "Ship Editor", route: Route.shipEditor },
-  { label: "Combat", route: Route.combat },
+  { label: "Workshop", route: Route.Workshop },
+  { label: "Ship Editor", route: Route.ShipEditor },
+  { label: "Combat", route: Route.Combat },
 ];
 
 function App() {
@@ -25,6 +25,7 @@ function App() {
         {NAV_ROUTES.map(({ label, route: r }) => (
           <button
             key={r}
+            type="button"
             onClick={() => setRoute(r)}
             className={`px-3 py-1 text-sm rounded transition-colors ${
               route === r
@@ -39,14 +40,15 @@ function App() {
 
       {/* Fullscreen button */}
       <button
+        type="button"
         onClick={() => {
           if (document.fullscreenElement) {
-            document.exitFullscreen().catch((e) => {
+            document.exitFullscreen().catch((e: unknown) => {
               console.error("Failed to exit fullscreen:", e);
             });
           } else {
             document.documentElement.requestFullscreen()
-              .catch((e) => {
+              .catch((e: unknown) => {
                 console.error("Failed to enter fullscreen:", e);
               });
           }
@@ -60,13 +62,13 @@ function App() {
     {/* Router */}
     {(() => {
       switch (route) {
-        case Route.workshop:
+        case Route.Workshop:
           return <WorkshopView />;
 
-        case Route.shipEditor:
+        case Route.ShipEditor:
           return <ShipEditorView />;
 
-        case Route.combat:
+        case Route.Combat:
           return <CombatView />;
 
         default:
@@ -80,4 +82,4 @@ function App() {
   </>);
 }
 
-export default App
+export default App;

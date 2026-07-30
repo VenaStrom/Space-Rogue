@@ -81,6 +81,7 @@ export class Camera {
   }
 
   /** Restore transform. Call after drawing world objects. */
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- instance method for API symmetry with applyTransform
   public restoreTransform(ctx: CanvasRenderingContext2D) {
     ctx.restore();
   }

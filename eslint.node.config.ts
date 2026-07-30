@@ -2,6 +2,7 @@ import { defineConfig } from "eslint/config";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import globals from "globals";
+import { commonRules } from "./eslint.rules";
 
 export default defineConfig(
   {
@@ -12,7 +13,7 @@ export default defineConfig(
     ],
     extends: [
       eslint.configs.recommended,
-      tseslint.configs.recommendedTypeChecked
+      tseslint.configs.recommendedTypeChecked,
     ],
     languageOptions: {
       ecmaVersion: 2023,
@@ -23,7 +24,7 @@ export default defineConfig(
       },
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      ...commonRules,
     },
   },
 );

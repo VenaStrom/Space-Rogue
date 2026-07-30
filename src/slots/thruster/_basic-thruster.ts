@@ -3,7 +3,7 @@ import { SlotItem } from "../_slot-item";
 
 export class BasicThrusterSlot extends SlotItem {
   static readonly id = "basic-thruster";
-  readonly slotType = SlotType.thruster;
+  readonly slotType = SlotType.Thruster;
   readonly id = BasicThrusterSlot.id;
   readonly name = "Basic Thruster";
 
@@ -15,5 +15,6 @@ export class BasicThrusterSlot extends SlotItem {
 
   readonly trailLength: number = 20;
   readonly trailWidth: number = 5;
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- config data overridable per subclass, not behavior
   readonly trailColor: (a: number) => string = (a) => `rgba(128, 216, 255, ${a})`;
 }

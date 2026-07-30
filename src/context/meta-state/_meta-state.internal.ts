@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Route } from "../../types"
+import type { Route } from "../../types";
 import { config } from "../../config";
 
 export type MetaStateContextType = {
@@ -8,6 +8,6 @@ export type MetaStateContextType = {
 };
 export const defaultMetaStateContext: MetaStateContextType = {
   route: config.defaultRoute,
-  setRoute: () => { },
+  setRoute: () => { /* empty */ },
 };
 export const MetaStateContext = createContext<MetaStateContextType>(defaultMetaStateContext);

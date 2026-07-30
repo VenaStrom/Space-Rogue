@@ -4,7 +4,7 @@ import { SlotItem } from "../_slot-item";
 
 export class BasicWeaponSlot extends SlotItem {
   static readonly id = "basic-weapon-slot";
-  readonly slotType = SlotType.weapon;
+  readonly slotType = SlotType.Weapon;
   readonly id = BasicWeaponSlot.id;
   readonly name = "Basic Weapon Slot";
   readonly maxHealth = 10;

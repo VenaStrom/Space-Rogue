@@ -1,0 +1,95 @@
+import type { Config } from "eslint/config";
+import { enumStyle } from "./scripts/eslint/enumStyle";
+
+// Registered as a global block in eslint.config.ts so commonRules can
+// reference local/* in every config file.
+export const localPlugin = { rules: { "enum-style": enumStyle } };
+
+// Shared between the browser and node configs. Rules that only make sense in
+// one environment (react/*, the node-builtin import ban) live in the
+// respective config file instead.
+export const commonRules: Config["rules"] = {
+  "comma-dangle": ["error", "always-multiline"],
+  "default-case-last": "error",
+  "default-case": "error",
+  "eqeqeq": ["error", "smart"],
+  "local/enum-style": "error",
+  "no-case-declarations": "error",
+  "no-cond-assign": ["error", "always"],
+  "no-duplicate-imports": ["error", { allowSeparateTypeImports: true, includeExports: true }],
+  "no-empty": "warn",
+  "no-eval": "error",
+  "no-lonely-if": "warn",
+  "no-multi-assign": "error",
+  "no-multi-str": "error",
+  "no-restricted-globals": "error",
+  "no-self-compare": "error",
+  "no-sequences": "error",
+  "no-template-curly-in-string": "warn",
+  "no-throw-literal": "error",
+  "no-unmodified-loop-condition": "error",
+  "no-unreachable-loop": "error",
+  "no-useless-assignment": "warn",
+  "no-useless-rename": "error",
+  "no-var": "error",
+  "no-with": "error",
+  "prefer-const": "error",
+  "radix": "error",
+  "semi": ["error", "always"],
+  "@typescript-eslint/no-unused-vars": [
+    "error",
+    {
+      args: "all",
+      argsIgnorePattern: "^_",
+      caughtErrors: "all",
+      caughtErrorsIgnorePattern: "^_",
+      destructuredArrayIgnorePattern: "^_",
+      varsIgnorePattern: "^_",
+      ignoreRestSiblings: true,
+    },
+  ],
+  "@typescript-eslint/ban-ts-comment": "error",
+  "@typescript-eslint/class-methods-use-this": "error",
+  "@typescript-eslint/consistent-type-assertions": "error",
+  "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
+  "@typescript-eslint/consistent-type-exports": "warn",
+  "@typescript-eslint/consistent-type-imports": "warn",
+  "@typescript-eslint/no-array-constructor": "error",
+  "@typescript-eslint/no-base-to-string": "warn",
+  "@typescript-eslint/no-confusing-non-null-assertion": "error",
+  "@typescript-eslint/no-empty-function": "warn",
+  "@typescript-eslint/no-explicit-any": "error",
+  "@typescript-eslint/no-floating-promises": "warn",
+  "@typescript-eslint/no-for-in-array": "error",
+  "@typescript-eslint/no-implied-eval": "error",
+  "@typescript-eslint/no-import-type-side-effects": "error",
+  "@typescript-eslint/no-misused-promises": "warn",
+  "@typescript-eslint/no-non-null-assertion": "warn",
+  "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+  "@typescript-eslint/no-unsafe-argument": "warn",
+  "@typescript-eslint/no-unsafe-assignment": "warn",
+  "@typescript-eslint/no-unsafe-call": "warn",
+  "@typescript-eslint/no-unsafe-enum-comparison": "warn",
+  "@typescript-eslint/no-unsafe-member-access": "warn",
+  "@typescript-eslint/no-unsafe-return": "error",
+  "@typescript-eslint/no-use-before-define": ["error", { functions: false, classes: false }],
+  "@typescript-eslint/only-throw-error": "warn",
+  "@typescript-eslint/prefer-nullish-coalescing": ["warn", { ignorePrimitives: { string: true, boolean: true } }],
+  "@typescript-eslint/prefer-optional-chain": "warn",
+  "@typescript-eslint/require-await": "warn",
+  "@typescript-eslint/restrict-template-expressions": "warn",
+  "@typescript-eslint/switch-exhaustiveness-check": "warn",
+  "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
+
+  // Switch cases must be scoped
+  "no-restricted-syntax": ["error",
+    {
+      "selector": "SwitchCase > *.consequent:not(ReturnStatement):not(BreakStatement):not(BlockStatement)",
+      "message": "Switch cases without blocks are disallowed.",
+    },
+    {
+      "selector": "SwitchStatement:has(SwitchCase > *.consequent:not(ReturnStatement)):has(SwitchCase > ReturnStatement.consequent)",
+      "message": "Switch cases must be consistent: do not mix direct returns with other case body styles.",
+    },
+  ],
+};

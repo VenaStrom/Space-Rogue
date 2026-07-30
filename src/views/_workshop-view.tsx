@@ -62,20 +62,21 @@ function updateSlot(
 ): ShipLoadout {
   const upd = (arr: Slot[]) => arr.map((s, i) => (i === localIdx ? { ...s, item } : s));
   switch (type) {
-    case SlotType.weapon: return { ...ship, weaponSlots: upd(ship.weaponSlots) };
-    case SlotType.thruster: return { ...ship, thrusterSlots: upd(ship.thrusterSlots) };
-    case SlotType.misc: return { ...ship, miscSlots: upd(ship.miscSlots) };
-    case SlotType.command: return { ...ship, commandSlots: upd(ship.commandSlots) };
-    case SlotType.power: return { ...ship, powerSlots: upd(ship.powerSlots) };
+    case SlotType.Weapon: return { ...ship, weaponSlots: upd(ship.weaponSlots) };
+    case SlotType.Thruster: return { ...ship, thrusterSlots: upd(ship.thrusterSlots) };
+    case SlotType.Misc: return { ...ship, miscSlots: upd(ship.miscSlots) };
+    case SlotType.Command: return { ...ship, commandSlots: upd(ship.commandSlots) };
+    case SlotType.Power: return { ...ship, powerSlots: upd(ship.powerSlots) };
+    default: return ship;
   }
 }
 
 function getSlotCurrentItem(ship: ShipLoadout, type: SlotType, localIdx: number): SlotItem | null {
   const item = ship[
-    type === SlotType.weapon ? "weaponSlots" satisfies keyof ShipLoadout :
-      type === SlotType.thruster ? "thrusterSlots" satisfies keyof ShipLoadout :
-        type === SlotType.misc ? "miscSlots" satisfies keyof ShipLoadout :
-          type === SlotType.command ? "commandSlots" satisfies keyof ShipLoadout :
+    type === SlotType.Weapon ? "weaponSlots" satisfies keyof ShipLoadout :
+      type === SlotType.Thruster ? "thrusterSlots" satisfies keyof ShipLoadout :
+        type === SlotType.Misc ? "miscSlots" satisfies keyof ShipLoadout :
+          type === SlotType.Command ? "commandSlots" satisfies keyof ShipLoadout :
             "powerSlots" satisfies keyof ShipLoadout
   ][localIdx].item;
   return (item !== null && typeof item !== "string") ? item : null;
@@ -143,7 +144,7 @@ function SlotButton({
     ? SLOT_BORDER_ACTIVE[slot.type]
     : SLOT_BORDER_DIM[slot.type];
   return (
-    <button
+    <button type="button"
       {...inline
         ? {}
         : { style: { position: "absolute", left: x, top: y, transform: "translate(-50%, -50%)" } }
@@ -179,7 +180,7 @@ function SlotCard({
 }) {
   return <li className="flex flex-row gap-x-2">
     <SlotButton
-      slot={slot} index={index} inline
+      slot={slot} index={index} inline={true}
       isHovered={isHovered} isEquipTarget={isEquipTarget}
       onEnter={onEnter} onLeave={onLeave} onClick={onClick}
     />
@@ -203,7 +204,7 @@ function InventoryCard({
 }) {
   const border = isSelected ? SLOT_BORDER_ACTIVE[item.slotType] : SLOT_BORDER_DIM[item.slotType];
   return (
-    <button
+    <button type="button"
       className={`
         border rounded px-3 py-2 text-left cursor-pointer transition-colors w-full
         ${border}
@@ -236,22 +237,22 @@ export function WorkshopView() {
 
   // Flat list of all slots with type and local index for click routing
   const allSlots = [
-    ...playerShip.weaponSlots.map((slot, li) => ({ slot, li, type: SlotType.weapon })),
-    ...playerShip.thrusterSlots.map((slot, li) => ({ slot, li, type: SlotType.thruster })),
-    ...playerShip.miscSlots.map((slot, li) => ({ slot, li, type: SlotType.misc })),
-    ...playerShip.commandSlots.map((slot, li) => ({ slot, li, type: SlotType.command })),
-    ...playerShip.powerSlots.map((slot, li) => ({ slot, li, type: SlotType.power })),
+    ...playerShip.weaponSlots.map((slot, li) => ({ slot, li, type: SlotType.Weapon })),
+    ...playerShip.thrusterSlots.map((slot, li) => ({ slot, li, type: SlotType.Thruster })),
+    ...playerShip.miscSlots.map((slot, li) => ({ slot, li, type: SlotType.Misc })),
+    ...playerShip.commandSlots.map((slot, li) => ({ slot, li, type: SlotType.Command })),
+    ...playerShip.powerSlots.map((slot, li) => ({ slot, li, type: SlotType.Power })),
   ];
 
   // Per-type groups with global+local indices, for the list section
   const slotGroups: { type: SlotType; slots: { slot: Slot; gi: number; li: number }[] }[] = [];
   let gi = 0;
   for (const [type, slots] of [
-    [SlotType.weapon, playerShip.weaponSlots],
-    [SlotType.thruster, playerShip.thrusterSlots],
-    [SlotType.misc, playerShip.miscSlots],
-    [SlotType.command, playerShip.commandSlots],
-    [SlotType.power, playerShip.powerSlots],
+    [SlotType.Weapon, playerShip.weaponSlots],
+    [SlotType.Thruster, playerShip.thrusterSlots],
+    [SlotType.Misc, playerShip.miscSlots],
+    [SlotType.Command, playerShip.commandSlots],
+    [SlotType.Power, playerShip.powerSlots],
   ] as [SlotType, Slot[]][]) {
     slotGroups.push({ type, slots: slots.map((slot, li) => ({ slot, gi: gi++, li })) });
   }
@@ -375,8 +376,7 @@ export function WorkshopView() {
       </section>
 
       {/* Slot popover */}
-      {activeSlot && (
-        <>
+      {activeSlot ? <>
           <div className="fixed inset-0 z-40" onClick={() => setActiveSlot(null)} />
           <div
             className="fixed z-50 bg-gray-950 border border-gray-700 rounded shadow-xl p-2 flex flex-col gap-1 min-w-44"
@@ -389,7 +389,7 @@ export function WorkshopView() {
             {popoverAvailable.length === 0
               ? <p className="text-sm text-gray-600 px-2 py-1">Nothing in inventory</p>
               : popoverAvailable.map(({ item, invIdx }) => (
-                <button
+                <button type="button"
                   key={invIdx}
                   className={`text-left px-2 py-1.5 rounded text-sm text-white hover:bg-gray-700 transition-colors border ${SLOT_BORDER_DIM[item.slotType]}`}
                   onClick={() => handlePopoverItemClick(item, invIdx)}
@@ -399,21 +399,18 @@ export function WorkshopView() {
               ))
             }
 
-            {popoverEquipped && (
-              <>
+            {popoverEquipped ? <>
                 <div className="border-t border-gray-700 my-1" />
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 px-1 pb-1">Equipped</p>
-                <button
+                <button type="button"
                   className={`text-left px-2 py-1.5 rounded text-sm text-gray-400 hover:bg-gray-700 hover:text-white transition-colors border ${SLOT_BORDER_DIM[activeSlot.type]}`}
                   onClick={() => handlePopoverItemClick(popoverEquipped, null)}
                 >
                   {popoverEquipped.name}
                 </button>
-              </>
-            )}
+              </> : null}
           </div>
-        </>
-      )}
+        </> : null}
 
     </main>
   );

@@ -26,10 +26,10 @@ export class AsteroidBelt {
 
       let cx: number, cy: number;
       switch (side) {
-        case 0: cx = Math.random() * worldWidth; cy = Math.random() * beltWidth; break;
-        case 1: cx = Math.random() * worldWidth; cy = worldHeight - Math.random() * beltWidth; break;
-        case 2: cx = Math.random() * beltWidth; cy = Math.random() * worldHeight; break;
-        default: cx = worldWidth - Math.random() * beltWidth; cy = Math.random() * worldHeight;
+        case 0: { cx = Math.random() * worldWidth; cy = Math.random() * beltWidth; break; }
+        case 1: { cx = Math.random() * worldWidth; cy = worldHeight - Math.random() * beltWidth; break; }
+        case 2: { cx = Math.random() * beltWidth; cy = Math.random() * worldHeight; break; }
+        default: { cx = worldWidth - Math.random() * beltWidth; cy = Math.random() * worldHeight; }
       }
 
       // Build an irregular polygon by jittering both the angle and the radius

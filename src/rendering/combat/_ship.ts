@@ -59,8 +59,8 @@ export class Ship {
 
   private controlsHooked = false;
   private heldKeys: Set<string> = new Set();
-  private keydownHook = (_e: KeyboardEvent) => { };
-  private keyupHook = (_e: KeyboardEvent) => { };
+  private keydownHook: ((e: KeyboardEvent) => void) | null = null;
+  private keyupHook: ((e: KeyboardEvent) => void) | null = null;
 
   constructor(pos: V2 = { x: 0, y: 0 }, loadout?: ShipLoadout) {
     this.pos = pos;
@@ -167,8 +167,10 @@ export class Ship {
     if (typeof window === "undefined") return;
     if (!this.controlsHooked) return;
     this.controlsHooked = false;
-    window.removeEventListener("keydown", this.keydownHook);
-    window.removeEventListener("keyup", this.keyupHook);
+    if (this.keydownHook) window.removeEventListener("keydown", this.keydownHook);
+    if (this.keyupHook) window.removeEventListener("keyup", this.keyupHook);
+    this.keydownHook = null;
+    this.keyupHook = null;
   }
 
   public debugRender(ctx: CanvasRenderingContext2D) {

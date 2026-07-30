@@ -1,6 +1,7 @@
 import { Route } from "./_consts";
 import type { JSONValue } from "./_types";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isObj(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null) {
     console.info(`Value is not an object: ${(value as string).toString()}`);

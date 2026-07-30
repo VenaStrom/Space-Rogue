@@ -62,11 +62,11 @@ function findMirrorSlot(slots: Slot[], idx: number): number | null {
 function rebuildShip(hull: V2[], allSlots: Slot[]): ShipLoadout {
   return {
     hullVertices: hull,
-    weaponSlots: allSlots.filter(s => s.type === SlotType.weapon),
-    thrusterSlots: allSlots.filter(s => s.type === SlotType.thruster),
-    miscSlots: allSlots.filter(s => s.type === SlotType.misc),
-    commandSlots: allSlots.filter(s => s.type === SlotType.command),
-    powerSlots: allSlots.filter(s => s.type === SlotType.power),
+    weaponSlots: allSlots.filter(s => s.type === SlotType.Weapon),
+    thrusterSlots: allSlots.filter(s => s.type === SlotType.Thruster),
+    miscSlots: allSlots.filter(s => s.type === SlotType.Misc),
+    commandSlots: allSlots.filter(s => s.type === SlotType.Command),
+    powerSlots: allSlots.filter(s => s.type === SlotType.Power),
   };
 }
 
@@ -80,11 +80,11 @@ function isSlot(s: unknown): s is Slot {
   if (typeof s !== "object" || s === null) return false;
   const o = s as Record<string, unknown>;
   return (
-    o.type === SlotType.weapon
-    || o.type === SlotType.thruster
-    || o.type === SlotType.misc
-    || o.type === SlotType.command
-    || o.type === SlotType.power
+    o.type === SlotType.Weapon
+    || o.type === SlotType.Thruster
+    || o.type === SlotType.Misc
+    || o.type === SlotType.Command
+    || o.type === SlotType.Power
   )
     && o.item === null
     && isV2(o.hardpoint);
@@ -116,7 +116,7 @@ function ToolBtn({
   label: string; active: boolean; onClick: () => void; accent?: string;
 }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`px-3 py-1.5 text-xs transition-colors ${active
         ? "bg-gray-700 text-white"
@@ -132,7 +132,7 @@ export function ShipEditorView() {
   const { playerShip, setPlayerShip } = useGameState();
   const [tool, setTool] = useState<Tool>("select");
   const [mirror, setMirror] = useState(true);
-  const [addSlotType, setAddSlotType] = useState<SlotType>(SlotType.weapon);
+  const [addSlotType, setAddSlotType] = useState<SlotType>(SlotType.Weapon);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -338,16 +338,16 @@ export function ShipEditorView() {
         {/* Slot-type picker — only when add-hardpoint is active */}
         {tool === "add-hardpoint" && (
           <div className="flex rounded overflow-hidden border border-gray-700">
-            <ToolBtn label="Weapon" active={addSlotType === SlotType.weapon} onClick={() => setAddSlotType(SlotType.weapon)} accent="text-red-400" />
-            <ToolBtn label="Thruster" active={addSlotType === SlotType.thruster} onClick={() => setAddSlotType(SlotType.thruster)} accent="text-blue-400" />
-            <ToolBtn label="Misc" active={addSlotType === SlotType.misc} onClick={() => setAddSlotType(SlotType.misc)} accent="text-gray-400" />
-            <ToolBtn label="Command" active={addSlotType === SlotType.command} onClick={() => setAddSlotType(SlotType.command)} accent="text-purple-400" />
-            <ToolBtn label="Power" active={addSlotType === SlotType.power} onClick={() => setAddSlotType(SlotType.power)} accent="text-yellow-400" />
+            <ToolBtn label="Weapon" active={addSlotType === SlotType.Weapon} onClick={() => setAddSlotType(SlotType.Weapon)} accent="text-red-400" />
+            <ToolBtn label="Thruster" active={addSlotType === SlotType.Thruster} onClick={() => setAddSlotType(SlotType.Thruster)} accent="text-blue-400" />
+            <ToolBtn label="Misc" active={addSlotType === SlotType.Misc} onClick={() => setAddSlotType(SlotType.Misc)} accent="text-gray-400" />
+            <ToolBtn label="Command" active={addSlotType === SlotType.Command} onClick={() => setAddSlotType(SlotType.Command)} accent="text-purple-400" />
+            <ToolBtn label="Power" active={addSlotType === SlotType.Power} onClick={() => setAddSlotType(SlotType.Power)} accent="text-yellow-400" />
           </div>
         )}
 
         {/* Mirror toggle */}
-        <button
+        <button type="button"
           onClick={() => setMirror(m => !m)}
           className={`px-3 py-1.5 text-xs rounded border transition-colors ${mirror
             ? "border-purple-600 bg-purple-950 text-purple-300"
@@ -359,13 +359,13 @@ export function ShipEditorView() {
 
         {/* Import / Export */}
         <div className="flex gap-1">
-          <button
+          <button type="button"
             onClick={exportShip}
             className="px-3 py-1.5 text-xs rounded border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800 transition-colors"
           >
             Export JSON
           </button>
-          <button
+          <button type="button"
             onClick={() => importRef.current?.click()}
             className="px-3 py-1.5 text-xs rounded border border-gray-700 bg-gray-900 text-gray-400 hover:bg-gray-800 transition-colors"
           >
