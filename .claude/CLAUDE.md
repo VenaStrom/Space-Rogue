@@ -1,0 +1,1 @@
+- when i present an example idea of an item or anything really, document it in the repo so i can revisit it some day.
