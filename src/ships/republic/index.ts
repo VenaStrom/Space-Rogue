@@ -1,1 +1,1 @@
-export * from "./_ch-slp";
+export * from "./ch-slp";

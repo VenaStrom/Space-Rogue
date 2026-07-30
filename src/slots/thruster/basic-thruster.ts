@@ -1,5 +1,5 @@
 import { SlotType } from "../../types";
-import { SlotItem } from "../_slot-item";
+import { SlotItem } from "../slot-item";
 
 export class BasicThrusterSlot extends SlotItem {
   static readonly id = "basic-thruster";

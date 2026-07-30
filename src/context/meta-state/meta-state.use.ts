@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { MetaStateContext } from "./_meta-state.internal";
+import { MetaStateContext } from "./meta-state.internal";
 
 export function useMetaState() {
   const context = useContext(MetaStateContext);

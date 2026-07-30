@@ -1,5 +1,5 @@
-import { Route } from "./_consts";
-import type { JSONValue } from "./_types";
+import { Route } from "./consts";
+import type { JSONValue } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isObj(value: unknown): value is Record<string, unknown> {

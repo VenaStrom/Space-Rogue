@@ -1,5 +1,5 @@
 import type { SlotItem } from "../slots";
-import type { SlotType } from "./_consts";
+import type { SlotType } from "./consts";
 
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];

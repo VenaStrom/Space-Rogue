@@ -1,5 +1,5 @@
 import type { Rect, V2 } from "../../types";
-import type { Ship } from "./_ship";
+import type { Ship } from "./ship";
 
 type Asteroid = {
   x: number;

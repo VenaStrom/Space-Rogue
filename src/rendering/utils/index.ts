@@ -1,1 +1,1 @@
-export * from "./_angle";
+export * from "./angle";

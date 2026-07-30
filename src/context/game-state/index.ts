@@ -1,3 +1,3 @@
-export * from "./_game-state.internal";
-export * from "./_game-state.provider";
-export * from "./_game-state.use";
+export * from "./game-state.internal";
+export * from "./game-state.provider";
+export * from "./game-state.use";
