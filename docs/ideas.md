@@ -29,6 +29,16 @@ the distilled decisions live in the README; this is the raw material. Add freely
 - Later reactors: unlock live power management (FTL-style diverting) as a feature,
   matching player experience.
 
+## Items — jump drives
+
+- Retreating = diverting power to the jump drive at the cost of thrust, weapons,
+  shields, etc. Setups without power redirect instead statically charge the jump
+  drive at some fixed rate.
+- Jump drives have a bool stat: whether they can charge in combat at all — flavored
+  by how *stable* the jump tech is. Archetypes: a stable drive is less risky and can
+  charge under fire; a super unstable one can't (but is presumably better elsewhere).
+  Keep it a bool question, not a slider.
+
 ## Items — weapons / targeting
 
 - Advanced targeting computers let you target specific enemy components.
@@ -64,7 +74,12 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 ## Map / run
 
 - Harbinger-style open sector hopping; chained sectors with exit gates.
-- Fuel/supply drain as the anti-lollygagging pressure — exact mechanism undecided.
+- Anti-lollygagging pressure: **jump visas**, bought and collected during play.
+  Jumping without one summons the authorities — really overpowered, will likely
+  kill you, and they chase you. :)
+- The authorities double as an untouchable-tier faction; illegal jumping is the
+  player-triggered doom clock.
+- Jumping legally is thus an economic decision — visa cost competes with gear.
 
 ## Progression
 

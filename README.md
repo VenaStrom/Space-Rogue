@@ -40,7 +40,11 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Single ship, but fighters are first-class.** No fleet control — instead hangars are equippable slot items. Fighters launch, fight autonomously, and can be lost and replaced. Fighter builds should be very viable.
 
-**The map is open, but lollygagging costs you.** Harbinger-style sector hopping rather than a one-way branching path. Jumping and idling drain fuel/supplies — run dry and you're stranded into bad encounters (exact mechanism still being tuned). Runs are structured as chained sectors with exit gates: effectively endless, death is the ending.
+**The map is open, but lollygagging costs you.** Harbinger-style sector hopping rather than a one-way branching path. The pressure resource is the **jump visa**: jumping legally requires one, and they're bought and collected during play. Jump without one and you summon the authorities — massively overpowered, likely lethal, and they chase you. Runs are structured as chained sectors with exit gates: effectively endless, death is the ending.
+
+**Weapons: no ammo, twin-stick aim within arcs.** No consumable ammunition anywhere — fire rate and power are the only limits. Under direct piloting you aim with the mouse cursor, twin-stick style, but each hardpoint respects its firing arc.
+
+**Events come in two tiers.** Mostly short FTL-style text events — a paragraph, a few choices; plus a rarer tier of playable arena scenarios (escorts, salvage under pressure, and the like).
 
 **Items form a taxonomy: category → subcategory → variant.** Wide slot categories break into distinct subcategories with their own identities, which branch again into variants. E.g. command → [cockpit, bridge, maybe computer] → missile cockpit vs gun cockpit vs speed cockpit; accuracy bridge vs a plot-many-nav-points bridge. (Early spitball — the shape matters more than these exact examples.)
 
@@ -53,6 +57,14 @@ A full run should feel like a session — roughly 1–2 hours.
 **Item generation is procedural at dev time only.** Items get procedurally generated during development as a design aid — then hand-curated and frozen into the game's fixed item pool when they're good. Players never see a random item; they see the keepers. Each subcategory can have its own generation algorithms keyed off its stat shape.
 
 *Worked example — shields.* A shield's stats: number of segments, strength (graded, number underneath), a shape enum (e.g. several zones up front and a single one aft makes a "front sider"), charge rate, and a bool for whether redistributing shield power between zones is possible/allowed. A wanted archetype: a shield with zones *only* in the front — exposed sides in exchange for more capacity or charge rate. The generator can have a different algorithm per shape/archetype.
+
+**Retreat is a power decision.** Fleeing a bad fight means diverting power to your jump drive at the cost of thrust, weapons, and shields. Setups without power redirect charge the jump drive statically instead. Whether a drive can charge in combat at all is a per-item property (stable vs unstable jump tech).
+
+**Repairs are layered.** Components come back online automatically between fights; hull damage persists and costs real resources — station/shipyard repairs competing with shopping money, equippable repair systems/drones, and scarce consumable patches you spend when you choose.
+
+**Enemies are built same-ish.** Enemy ships use the hull + slotted-component system (so component targeting works on them), but with enemy-only equipment and hand-tuned loadouts; what they drop is curated separately from what they carry.
+
+**Save anywhere.** Runs are 1–2 hours, so you can suspend a run at any point outside combat and resume later.
 
 **Economy: salvage, shops, events.** Destroyed enemies drop salvage in the arena; station nodes have shops with currency-based trade; non-combat events (distress calls, anomalies) pay out for choices and risk. No crafting.
 
@@ -68,7 +80,7 @@ Raw spitball ideas — item examples, archetypes, variants — are collected in 
 
 ### Open questions
 
-- The exact fuel/supply pressure mechanism and its tuning.
+- Jump-visa tuning: pricing, availability, and exactly how the authorities behave once summoned.
 - Art direction — programmer-art polygons until the mechanics prove out, then decide.
 - How shield zones, armor areas, and component targeting interact in practice.
 - Faction count, identities, and how faction tech trees differ mechanically.
