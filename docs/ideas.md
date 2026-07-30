@@ -95,8 +95,10 @@ Specific item ideas live in [item-ideas.md](item-ideas.md).
 - Reusing the hull/slot system for stations means station variety is item variety.
 - Attacking a station yourself: presumably possible and presumably summons heat?
 - Stations spawn belonging to a faction, drawn from the fighting factions + a
-  neutral-traders pool — and you have rep with that faction. (First appearance of a
-  reputation system: shop prices? hostility? access?)
+  neutral-traders pool — and you have rep with that faction.
+- Rep is shallow by design: persists the whole run (unlike sector-scoped heat), good
+  rep (earned via quests/events) slightly improves prices, bad rep past a threshold
+  flips the faction to aggression. Nothing deeper.
 
 ## Run start
 
