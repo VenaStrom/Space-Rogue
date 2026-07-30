@@ -32,7 +32,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Items really affect the playstyle.** The guiding pillar: equipment shouldn't just be stat bumps — what you slot changes *how you play*. The command slot deciding your control scheme, hangars turning you into a carrier, targeting computers changing how you aim: that pattern should run through the whole item pool.
 
-**Control is defined by your command slot.** A *cockpit* gives direct piloting; a *command bridge* gives strategic/tactical orders instead. Flavors of each allow or disallow manual weapon control in exchange for buffs. Starting ships get direct control with auto-tracking, auto-firing turrets so new players aren't punished for not doing everything at once.
+**Control is defined by your command slot.** A *cockpit* gives direct piloting; a *command bridge* gives strategic/tactical orders; a *computer* automates the arena entirely — each computer ships with its own doctrine and usually extra buffs to counter that rigidity, while strategic decisions (like when to jump) stay yours. Flavors of each allow or disallow manual weapon control in exchange for buffs. Starting ships get direct control with auto-tracking, auto-firing turrets so new players aren't punished for not doing everything at once.
 
 **Damage is per-component.** Shields protect the whole ship but have zones. Slotted items take individual damage and can be knocked out. Advanced targeting computers — or plain skill when firing manually — let you aim at specific enemy components. The hull almost always takes chip damage through it all, and hulls have directional armor areas (e.g. thicker plating up front), so facing matters.
 
@@ -62,6 +62,12 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Events come in two tiers.** Mostly short FTL-style text events — a paragraph, a few choices; plus a rarer tier of playable arena scenarios (escorts, salvage under pressure, and the like).
 
+**Slots: core types plus per-hull utility mounts, gated by power hookup.** Hulls offer dedicated core slots (weapons, thrusters, command, power, shields) plus utility slots the hull itself defines — the generic "misc" catch-all disappears. Utility slots can be reserved for specific categories (a carrier's hangar mounts), and a slot's power hookup gates what fits: a high-power slot accepts anything, while a weak one only takes low-draw items (hangars, sensors, and the like).
+
+**Weapons are categorized by role, not projectile.** Sustained DPS, burst/alpha, point defense, utility — the projectile type (gun, launcher, beam) is a variant axis within each role, not the top of the taxonomy.
+
+**First-playable core: shield zones and power distribution.** Those two mechanics are load-bearing for the intended feel and ship in the first fun build. Component damage/targeting and fighters/hangars scale in later — high complexity, deferrable.
+
 **Items form a taxonomy: category → subcategory → variant.** Wide slot categories break into distinct subcategories with their own identities, which branch again into variants. E.g. command → [cockpit, bridge, maybe computer] → missile cockpit vs gun cockpit vs speed cockpit; accuracy bridge vs a plot-many-nav-points bridge. (Early spitball — the shape matters more than these exact examples.)
 
 **Items compose from a large effect pool.** Many small effect building blocks exist; a common item uses just one or two of them with counterbalancing debuffs, while rarer items carry stronger buffs (and fewer strings attached). Rarity is about how much of the effect pool an item taps and how cleanly.
@@ -84,7 +90,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Economy: salvage, shops, events.** Destroyed enemies drop salvage in the arena; station nodes have shops with currency-based trade; non-combat events (distress calls, anomalies) pay out for choices and risk. No crafting.
 
-**Salvage runs through cargo space.** Hulls have cargo holds. Out of combat, a UI shows items floating in space alongside your hold, and you move what you want to keep or discard — collection can be arena-wide, but never during combat. Cargo is definitely a hull stat, but with a reasonable minimum everywhere: more flavor than gameplay-deciding. What makes it matter is that **items can be swapped freely any time outside combat** — so a big-holded freighter can effectively carry multiple loadouts.
+**Salvage runs through cargo space.** Hulls have cargo holds. Out of combat, a UI shows items floating in space alongside your hold, and you move what you want to keep or discard — collection can be arena-wide, but never during combat. Cargo is definitely a hull stat, but with a reasonable minimum everywhere: more flavor than gameplay-deciding. What makes it matter is that **items can be swapped freely any time outside combat** — so a freighter with a big hold can effectively carry multiple loadouts.
 
 **Stations are immobile hulls.** Stations physically exist in their node's arena, armed — if enemies show up, you fight with the station present. They're built as hulls without movement, marked as stations. But commerce doesn't require the arena: a UI on the map screen handles the shopping unless there's a reason to be there. Each station spawns belonging to a faction — drawn from the fighting factions plus a neutral-traders pool — and you have **reputation** with that faction. Rep is deliberately shallow: it persists for the whole run (unlike heat), good rep from quests and events slightly improves prices, and bad rep past a threshold just means aggression.
 

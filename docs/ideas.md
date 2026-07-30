@@ -10,7 +10,10 @@ the distilled decisions live in the README; this is the raw material. Add freely
 - Bridge variants: accuracy bridge, a bridge that lets you plot many nav points.
 - Cockpit = direct piloting, bridge = strategic orders; flavors of each allow/disallow
   manual weapon control in exchange for buffs.
-- "Computer" as a third command subcategory is a maybe — role unclear, revisit.
+- "Computer" is the third command subcategory: fully automated arena combat. Each
+  computer ships with a different strategy/doctrine, often with more buffs as a
+  counter to the rigidness. Strategic decisions (jumping etc.) stay with the player;
+  in the arena it does whatever it does.
 - Bridges almost always allow fighter command, with varying efficacy; cockpits
   generally don't.
 
@@ -29,6 +32,18 @@ the distilled decisions live in the README; this is the raw material. Add freely
 - Later reactors: unlock live power management (FTL-style diverting) as a feature,
   matching player experience.
 
+## Items — thrusters
+
+- Role variants, mirroring the weapon taxonomy: cruise (top speed), brawler
+  (acceleration), dancer (turn/strafe) — counterbalanced stats per role.
+
+## Items — reactors (continued) / power notes
+
+- Reactors are the only power subcategory for now — output, reroute capability, and
+  stability live as stats/bools on the reactor.
+- Capacitors/batteries (buffering burst draw: alpha strikes, jump spool) noted as a
+  possible future subcategory — deliberately not in yet.
+
 ## Items — jump drives
 
 - Retreating = diverting power to the jump drive at the cost of thrust, weapons,
@@ -43,6 +58,13 @@ the distilled decisions live in the README; this is the raw material. Add freely
 
 - Advanced targeting computers let you target specific enemy components.
 - Manual fire achieves the same through skill.
+- Weapon roles (taxonomy top level): sustained DPS, burst/alpha, point defense,
+  utility. Projectile type (gun/launcher/beam) is a variant axis inside each role.
+- Utility role contents: EMP/disablers (component knockout without hull damage),
+  tractor beams (positioning as a weapon; synergy with hazards/ramming), mines and
+  deployables (turrets, decoys — area denial). "Component cracker" piercing weapons
+  were considered and not picked — component access stays with targeting, not a
+  weapon class.
 
 ## Items — hangars / fighters
 
@@ -55,6 +77,17 @@ the distilled decisions live in the README; this is the raw material. Add freely
   implies ram-plating / reinforced-prow style items eventually.
 - Terrain as a weapon: asteroids block shots, hazards can be lured into.
 - Slow-mo (never pause) while issuing orders — could scale with bridge quality?
+
+## Slots / hardpoints
+
+- Core slot types (weapon, thruster, command, power, shield) + utility slots defined
+  per hull; "misc" as a concept goes away.
+- Utility slots can be reserved for categories: a carrier hull guarantees hangar mounts.
+- Power-hookup gating: each slot has a power rating. Good hookup → anything fits;
+  low-power slot → only low-draw categories (hangars, sensors, …). The slot's power
+  rating doubles as the compatibility rule, which feeds the compat-notification UI.
+- Implies the code's SlotType enum becomes something like slot = (allowed categories /
+  power rating, size) eventually.
 
 ## Item system meta
 
