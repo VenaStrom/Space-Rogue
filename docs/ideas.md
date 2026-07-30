@@ -78,6 +78,19 @@ the distilled decisions live in the README; this is the raw material. Add freely
 
 Specific item ideas live in [item-ideas.md](item-ideas.md).
 
+## Hulls / cargo
+
+- Hulls have cargo space — a capacity stat. Salvage UI: items in space on one side,
+  your hold on the other; transfer to keep/discard. Arena-wide reach, out of combat only.
+- Cargo capacity as another hull differentiator (freighter-y hulls vs lean fighters).
+
+## Stations
+
+- Stations are hulls without movement, marked as stations — armed, present in their
+  node's arena, and part of the fight if one breaks out there.
+- Reusing the hull/slot system for stations means station variety is item variety.
+- Attacking a station yourself: presumably possible and presumably summons heat?
+
 ## Map / run
 
 - Harbinger-style open sector hopping; chained sectors with exit gates.

@@ -84,6 +84,14 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Economy: salvage, shops, events.** Destroyed enemies drop salvage in the arena; station nodes have shops with currency-based trade; non-combat events (distress calls, anomalies) pay out for choices and risk. No crafting.
 
+**Salvage runs through cargo space.** Hulls have cargo holds. Out of combat, a UI shows items floating in space alongside your hold, and you move what you want to keep or discard — collection can be arena-wide, but never during combat.
+
+**Stations are immobile hulls.** Stations physically exist in their node's arena, armed — if enemies show up, you fight with the station present. They're built as hulls without movement, marked as stations. But commerce doesn't require the arena: a UI on the map screen handles the shopping unless there's a reason to be there.
+
+**Runs open with a draft.** Pick an unlocked hull, then draft starting items from a small random offering — every run opens differently. (Permanent-loadout trophies come along per the meta-progression rules.)
+
+**Audio: diegetic minimal.** Ship hums, radio chatter, muffled space combat; music sparse and situational.
+
 **Distinct tech factions.** Multiple factions with visually and mechanically distinct hulls and equipment — loot reflects who you fought. (The repo's `ships/republic/` folder is the first of these.)
 
 **Meta-progression: hulls and trophies.** Dying can unlock new starting hulls. Certain items — legendary finds, achievement rewards — can be added to your permanent starting loadout.
