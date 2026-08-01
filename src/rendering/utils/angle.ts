@@ -1,3 +1,8 @@
+/** Normalize an angle in radians to [-π, π]. */
+export function normalizeRadians(a: number): number {
+  const tau = Math.PI * 2;
+  return ((a + Math.PI) % tau + tau) % tau - Math.PI;
+}
 
 export class Angle {
   private rads: number = 0;

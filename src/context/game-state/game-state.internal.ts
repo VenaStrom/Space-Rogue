@@ -21,19 +21,27 @@ export type GameStateContextType = {
 
 const defaultInventory: string[] = [
   "basic-thruster",
-  "basic-thruster",
-  "basic-thruster",
-  "basic-thruster",
   "basic-weapon",
-  "basic-weapon",
+  "burst-blaster",
+  "basic-shield",
 ];
+
+// Pre-filled fit so the dev Combat view is instantly a fight:
+// 4 autocannons + 2 burst blasters, full thrusters, one shield on the spine.
+const defaultEquipped: (string | null)[] = emptyFit(CH_SLP).equipped.map((_, i) => {
+  if (i <= 3) return "basic-weapon";
+  if (i <= 5) return "burst-blaster";
+  if (i <= 9) return "basic-thruster";
+  if (i === 10) return "basic-shield";
+  return null;
+});
 
 export const defaultGameStateContext: GameStateContextType = {
   time: 0,
   incrementTime: () => { /* empty */ },
   hull: CH_SLP,
   setHull: () => { /* empty */ },
-  equipped: emptyFit(CH_SLP).equipped,
+  equipped: defaultEquipped,
   setEquipped: () => { /* empty */ },
   inventory: defaultInventory,
   setInventory: () => { /* empty */ },

@@ -86,6 +86,14 @@ export class Camera {
     ctx.restore();
   }
 
+  /** Convert a canvas-pixel point to world coordinates at the current view. */
+  public screenToWorld(screen: Readonly<V2>, canvasW: number, canvasH: number): V2 {
+    return {
+      x: this.pos.x + (screen.x - canvasW / 2) / this.zoom,
+      y: this.pos.y + (screen.y - canvasH / 2) / this.zoom,
+    };
+  }
+
   /** Returns the rectangle of world space currently visible on screen. */
   public visibleRect(canvasW: number, canvasH: number): Rect {
     const hw = (canvasW / 2) / this.zoom;

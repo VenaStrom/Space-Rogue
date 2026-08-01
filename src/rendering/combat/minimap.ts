@@ -25,6 +25,7 @@ export class Minimap {
     visibleRect: Rect,
     canvasW: number,
     canvasH: number,
+    blips: readonly { pos: Readonly<V2>; color: string }[] = [],
   ): void {
     const s = SIZE;
     const ox = canvasW - PAD - s;   // top-left x of minimap
@@ -61,6 +62,12 @@ export class Minimap {
       visibleRect.w * scx,
       visibleRect.h * scy,
     );
+
+    // Blips (enemies, loot, …)
+    for (const blip of blips) {
+      ctx.fillStyle = blip.color;
+      ctx.fillRect(ox + blip.pos.x * scx - 1.5, oy + blip.pos.y * scy - 1.5, 3, 3);
+    }
 
     // Ship — small triangle pointing along heading
     const px = ox + shipPos.x * scx;

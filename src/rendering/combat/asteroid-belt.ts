@@ -107,4 +107,14 @@ export class AsteroidBelt {
       ship.pushOut(nx * (minDist - dist), ny * (minDist - dist), nx, ny);
     }
   }
+
+  /** Whether a point is inside any asteroid's bounding circle (projectile collision). */
+  public hitTestPoint(p: Readonly<V2>): boolean {
+    for (const m of this.asteroids) {
+      const dx = p.x - m.x;
+      const dy = p.y - m.y;
+      if (dx * dx + dy * dy < m.radius * m.radius) return true;
+    }
+    return false;
+  }
 }
