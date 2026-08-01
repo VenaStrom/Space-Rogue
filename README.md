@@ -66,7 +66,7 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Weapons are categorized by role, not projectile.** Sustained DPS, burst/alpha, point defense, utility — the projectile type (gun, launcher, beam) is a variant axis within each role, not the top of the taxonomy.
 
-**First-playable core: shield zones and power distribution.** Those two mechanics are load-bearing for the intended feel and ship in the first fun build. Component damage/targeting and fighters/hangars scale in later — high complexity, deferrable.
+**First-playable core: power distribution.** That mechanic is load-bearing for the intended feel and ships in the first fun build. Shield zones, component damage/targeting, and fighters/hangars scale in later — a whole-ship shield bubble stands in until zones matter.
 
 **Items form a taxonomy: category → subcategory → variant.** Wide slot categories break into distinct subcategories with their own identities, which branch again into variants. E.g. command → [cockpit, bridge, maybe computer] → missile cockpit vs gun cockpit vs speed cockpit; accuracy bridge vs a plot-many-nav-points bridge. (Early spitball — the shape matters more than these exact examples.)
 
