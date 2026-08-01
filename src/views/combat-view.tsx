@@ -27,7 +27,7 @@ type InitialFit = {
 const RAIDER_EQUIPPED_IDS = [
   "basic-weapon", "basic-weapon", null, null, null, null,
   "basic-thruster", "basic-thruster", "basic-thruster", "basic-thruster",
-  "basic-shield", null, null, null, null, null, null,
+  "basic-shield", null, null, null, null, null, "static-reactor",
 ];
 
 function raider(pos: { x: number; y: number }): EncounterShip {
@@ -40,11 +40,19 @@ function raider(pos: { x: number; y: number }): EncounterShip {
   };
 }
 
+const POWER_MODE_COLOR: Record<string, string> = {
+  balanced: "rgba(255,255,255,0.6)",
+  weapons: "#ffd75e",
+  shields: "#59c8ff",
+  engines: "#8dff8d",
+  jump: "#c98aff",
+};
+
 function drawHud(
   ctx: CanvasRenderingContext2D,
   player: Ship | null,
   control: PlayerControl,
-  status: "fighting" | "victory" | "defeat",
+  status: "fighting" | "victory" | "defeat" | "escaped",
   enemiesAlive: number,
 ): void {
   const { width: w, height: h } = ctx.canvas;
@@ -69,9 +77,24 @@ function drawHud(
       ctx.fillRect(x, y, barW * player.shieldFraction, 12);
     }
 
+    // Jump drive charge above that
+    const jump = player.jumpCharge;
+    if (jump !== null) {
+      y -= 16;
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(x, y, barW, 12);
+      ctx.fillStyle = player.jumpReady ? "#e2b8ff" : "#9d5ec9";
+      ctx.fillRect(x, y, barW * jump, 12);
+      if (player.jumpReady) {
+        ctx.font = "10px monospace";
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillText("JUMP READY — press 4 to spool out", x + 6, y + 9);
+      }
+    }
+
     // Weapon cooldown pips
     const pips = player.weaponReadiness;
-    const pipY = h - 48 - (player.hasShield ? 16 : 0);
+    const pipY = y - 22;
     pips.forEach((pip, i) => {
       const px = x + i * 18;
       ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -84,10 +107,25 @@ function drawHud(
       ctx.fillRect(px, pipY + 14 - fillH, 14, fillH);
     });
 
-    // Turret-assist indicator
+    // Power routing + turret-assist indicators
     ctx.font = "11px monospace";
+    if (player.hasReactor) {
+      const mode = player.currentPowerMode;
+      ctx.fillStyle = POWER_MODE_COLOR[mode] ?? "rgba(255,255,255,0.6)";
+      ctx.fillText(
+        player.canReroute ? `PWR ▸ ${mode.toUpperCase()} [1-4, 0]` : "PWR ▸ FIXED",
+        x, pipY - 24,
+      );
+      if (player.powerHealth < 1) {
+        ctx.fillStyle = "#ff8d5e";
+        ctx.fillText(`UNDERPOWERED ×${player.powerHealth.toFixed(2)}`, x, pipY - 36);
+      }
+    } else {
+      ctx.fillStyle = "#ff8d5e";
+      ctx.fillText("NO REACTOR — EMERGENCY POWER", x, pipY - 24);
+    }
     ctx.fillStyle = control.autoFire ? "#ffd75e" : "rgba(255,255,255,0.25)";
-    ctx.fillText(`AUTO ${control.autoFire ? "ON" : "OFF"} [T]`, x, pipY - 8);
+    ctx.fillText(`AUTO ${control.autoFire ? "ON" : "OFF"} [T]`, x, pipY - 12);
   }
 
   // Enemy counter
@@ -99,12 +137,15 @@ function drawHud(
 
   // End-state overlay
   if (status !== "fighting") {
+    const headline = status === "victory" ? "VICTORY"
+      : status === "escaped" ? "JUMPED OUT"
+        : "SHIP DESTROYED";
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fillRect(0, 0, w, h);
     ctx.textAlign = "center";
     ctx.font = "bold 42px monospace";
-    ctx.fillStyle = status === "victory" ? "#8dff8d" : "#ff8d8d";
-    ctx.fillText(status === "victory" ? "VICTORY" : "SHIP DESTROYED", w / 2, h / 2 - 10);
+    ctx.fillStyle = status === "victory" ? "#8dff8d" : status === "escaped" ? "#c98aff" : "#ff8d8d";
+    ctx.fillText(headline, w / 2, h / 2 - 10);
     ctx.font = "16px monospace";
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.fillText("press R to restart", w / 2, h / 2 + 24);
@@ -262,7 +303,7 @@ export function CombatView() {
     </div>
 
     <p className="mt-2 text-xs text-gray-600 font-mono">
-      WASD fly · mouse aim · LMB fire · T turret auto · scroll zoom · R restart
+      WASD fly · mouse aim · LMB fire · T turret auto · 1/2/3 power to wpn/shd/eng · 4 spool jump · 0 balanced · scroll zoom · R restart
     </p>
   </main>;
 }

@@ -1,5 +1,5 @@
 import { ItemCategory, type HullDef, type V2 } from "../../types";
-import type { ItemDef, ThrusterStats, WeaponStats } from "../../items";
+import type { DriveStats, ItemDef, ReactorStats, ThrusterStats, WeaponStats } from "../../items";
 import { Angle, normalizeRadians } from "../utils";
 import type { ControlIntents } from "./control";
 
@@ -7,6 +7,26 @@ export const PHYSICS_HZ = 60;
 const THRUST_SCALE = 0.08;
 const DEFAULT_HULL_HP = 100;
 const HIT_FLASH_STEPS = 6;
+/** Base power factor for a ship with no reactor equipped. */
+const EMERGENCY_POWER = 0.3;
+
+export const PowerMode = {
+  Balanced: "balanced",
+  Weapons: "weapons",
+  Shields: "shields",
+  Engines: "engines",
+  Jump: "jump",
+} as const;
+export type PowerMode = typeof PowerMode[keyof typeof PowerMode];
+
+/** Per-system multipliers for each reroute mode; jump idles at a trickle. */
+const MODE_FACTORS: Record<PowerMode, { weapons: number; shields: number; engines: number; jump: number }> = {
+  balanced: { weapons: 1, shields: 1, engines: 1, jump: 0.35 },
+  weapons: { weapons: 1.5, shields: 0.7, engines: 0.7, jump: 0.35 },
+  shields: { weapons: 0.7, shields: 1.6, engines: 0.7, jump: 0.35 },
+  engines: { weapons: 0.7, shields: 0.7, engines: 1.5, jump: 0.35 },
+  jump: { weapons: 0.5, shields: 0.5, engines: 0.5, jump: 1 },
+};
 
 const DEFAULT_HULL: V2[] = [
   { x: 67, y: 0 },
@@ -91,6 +111,13 @@ export class Ship {
   private stepsSinceHit = Number.MAX_SAFE_INTEGER;
   private hitFlash = 0;
 
+  private reactor: ReactorStats | null = null;
+  private drive: { stats: DriveStats; charge: number } | null = null;
+  private powerMode: PowerMode = PowerMode.Balanced;
+  /** Total powerDraw of everything equipped, for the output-vs-demand base factor. */
+  private totalDemand = 0;
+  public jumpedOut = false;
+
   private readonly radius: number;
   private readonly lengthUnits: number;
 
@@ -103,6 +130,8 @@ export class Ship {
   public get shipLength(): number { return this.lengthUnits; }
   public get colliderRadius(): number { return this.radius; }
   public get alive(): boolean { return this.hp > 0; }
+  /** Alive and not jumped out — i.e. still participating in the arena. */
+  public get inArena(): boolean { return this.alive && !this.jumpedOut; }
   public get hullFraction(): number { return Math.max(0, this.hp) / this.maxHp; }
   public get shieldFraction(): number {
     return this.shield ? this.shield.current / this.shield.capacity : 0;
@@ -125,6 +154,27 @@ export class Ship {
       burst: w.stats.burst > 1,
     }));
   }
+
+  /** Output-vs-demand scaling; EMERGENCY_POWER with no reactor equipped. */
+  private get basePower(): number {
+    if (this.reactor === null) return EMERGENCY_POWER;
+    return Math.min(1, this.reactor.output / Math.max(1, this.totalDemand));
+  }
+  private get weaponFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].weapons; }
+  private get shieldFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].shields; }
+  private get engineFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].engines; }
+  private get jumpFactor(): number {
+    return this.reactor === null ? 0 : MODE_FACTORS[this.powerMode].jump;
+  }
+
+  public get currentPowerMode(): PowerMode { return this.powerMode; }
+  public get canReroute(): boolean { return this.reactor?.allowReroute ?? false; }
+  public get hasReactor(): boolean { return this.reactor !== null; }
+  /** 0..1 jump drive charge, or null when no drive is equipped. */
+  public get jumpCharge(): number | null { return this.drive ? this.drive.charge : null; }
+  public get jumpReady(): boolean { return (this.drive?.charge ?? 0) >= 1; }
+  /** Under 1 when equipment demand exceeds reactor output. */
+  public get powerHealth(): number { return this.basePower; }
 
   public pushOut(dx: number, dy: number, nx: number, ny: number): void {
     this.pos.x += dx;
@@ -175,7 +225,17 @@ export class Ship {
           chargeRate: (this.shield?.chargeRate ?? 0) + s.chargeRate / PHYSICS_HZ,
           chargeDelay: Math.max(this.shield?.chargeDelay ?? 0, s.chargeDelay * PHYSICS_HZ),
         };
+      } else if (item.category === ItemCategory.Reactor) {
+        // Multiple reactors stack output; reroute needs every reactor to support it.
+        this.reactor = {
+          output: (this.reactor?.output ?? 0) + item.stats.output,
+          allowReroute: (this.reactor?.allowReroute ?? true) && item.stats.allowReroute,
+        };
+      } else if (item.category === ItemCategory.Drive) {
+        // One drive is enough; the first equipped wins.
+        this.drive ??= { stats: item.stats, charge: 0 };
       }
+      this.totalDemand += item.powerDraw;
     });
 
     if (this.thrusters.length > 0) {
@@ -229,24 +289,30 @@ export class Ship {
       return;
     }
 
+    // Power rerouting: only reactors that support it honor a mode request
+    if (intents.powerMode !== null && this.canReroute) {
+      this.powerMode = intents.powerMode;
+    }
+
     const cos = this.cosScale;
     const sin = this.sinScale;
 
+    const engine = this.engineFactor;
     const thrustIntent = Math.max(-1, Math.min(1, intents.thrust));
     const thrusting = thrustIntent > 0.01;
 
     if (thrustIntent > 0) {
-      this.vel.x += cos * this.avgThrust * THRUST_SCALE * thrustIntent * delta;
-      this.vel.y += sin * this.avgThrust * THRUST_SCALE * thrustIntent * delta;
+      this.vel.x += cos * this.avgThrust * THRUST_SCALE * thrustIntent * engine * delta;
+      this.vel.y += sin * this.avgThrust * THRUST_SCALE * thrustIntent * engine * delta;
     } else if (thrustIntent < 0) {
-      this.vel.x += cos * this.avgThrust * THRUST_SCALE * 0.75 * thrustIntent * delta;
-      this.vel.y += sin * this.avgThrust * THRUST_SCALE * 0.75 * thrustIntent * delta;
+      this.vel.x += cos * this.avgThrust * THRUST_SCALE * 0.75 * thrustIntent * engine * delta;
+      this.vel.y += sin * this.avgThrust * THRUST_SCALE * 0.75 * thrustIntent * engine * delta;
     }
 
     const turnIntent = Math.max(-1, Math.min(1, intents.turn));
-    const maxTurn = this.avgMaxTurnPerStep;
+    const maxTurn = this.avgMaxTurnPerStep * Math.min(1.25, engine);
     if (turnIntent !== 0) {
-      this.angularVel = Math.max(-maxTurn, Math.min(maxTurn, this.angularVel + 0.005 * turnIntent * delta));
+      this.angularVel = Math.max(-maxTurn, Math.min(maxTurn, this.angularVel + 0.005 * turnIntent * engine * delta));
     }
 
     this.angularVel *= 0.85;
@@ -266,11 +332,14 @@ export class Ship {
     this.pos.x += this.vel.x * delta;
     this.pos.y += this.vel.y * delta;
 
-    // Shield recharge
+    // Shield recharge, fed by power
     if (this.shield) {
       this.stepsSinceHit += delta;
       if (this.stepsSinceHit >= this.shield.chargeDelay && this.shield.current < this.shield.capacity) {
-        this.shield.current = Math.min(this.shield.capacity, this.shield.current + this.shield.chargeRate * delta);
+        this.shield.current = Math.min(
+          this.shield.capacity,
+          this.shield.current + this.shield.chargeRate * this.shieldFactor * delta,
+        );
       }
     }
     if (this.hitFlash > 0) this.hitFlash -= delta;
@@ -350,17 +419,34 @@ export class Ship {
         continue;
       }
 
-      // New trigger pull
+      // New trigger pull; weapon power scales fire rate
       if (intents.fire && aimAngle !== null && w.cooldownLeft <= 0) {
         fireShot(aimAngle);
-        w.cooldownLeft = w.stats.cooldown * PHYSICS_HZ;
+        w.cooldownLeft = w.stats.cooldown * PHYSICS_HZ / Math.max(0.05, this.weaponFactor);
         w.burstLeft = w.stats.burst - 1;
         w.burstTimer = w.stats.burstInterval * PHYSICS_HZ;
       }
     }
   }
 
+  /**
+   * Tick the jump drive. Charge trickles on the idle feed and floods when
+   * power is rerouted to jump; unstable drives can't charge while hostiles
+   * are present. The jump fires the moment the drive is full while spooling.
+   */
+  public updateDrive(delta: number, inCombat: boolean): void {
+    if (!this.drive || !this.alive || this.jumpedOut) return;
+    if (inCombat && !this.drive.stats.chargeInCombat) return;
+    const rate = this.jumpFactor / (this.drive.stats.chargeTime * PHYSICS_HZ);
+    if (rate <= 0) return;
+    this.drive.charge = Math.min(1, this.drive.charge + rate * delta);
+    if (this.drive.charge >= 1 && this.powerMode === PowerMode.Jump) {
+      this.jumpedOut = true;
+    }
+  }
+
   public render(ctx: CanvasRenderingContext2D) {
+    if (this.jumpedOut) return;
     if (this.alive) this.renderTrails(ctx);
 
     const originalFillStyle = ctx.fillStyle;

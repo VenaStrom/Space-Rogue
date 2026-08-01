@@ -27,12 +27,14 @@ const defaultInventory: string[] = [
 ];
 
 // Pre-filled fit so the dev Combat view is instantly a fight:
-// 4 autocannons + 2 burst blasters, full thrusters, one shield on the spine.
+// 4 autocannons + 2 burst blasters, full thrusters, shield, drive, reroute reactor.
 const defaultEquipped: (string | null)[] = emptyFit(CH_SLP).equipped.map((_, i) => {
   if (i <= 3) return "basic-weapon";
   if (i <= 5) return "burst-blaster";
   if (i <= 9) return "basic-thruster";
   if (i === 10) return "basic-shield";
+  if (i === 11) return "stable-drive";
+  if (i === 16) return "relay-reactor";
   return null;
 });
 

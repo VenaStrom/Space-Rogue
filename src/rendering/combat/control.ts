@@ -1,7 +1,7 @@
 import type { V2 } from "../../types";
 import { normalizeRadians } from "../utils";
 import type { Camera } from "./camera";
-import { PHYSICS_HZ, type Ship } from "./ship";
+import { PHYSICS_HZ, PowerMode, type Ship } from "./ship";
 
 /** What a controller wants the ship to do this physics step. */
 export type ControlIntents = {
@@ -12,9 +12,11 @@ export type ControlIntents = {
   /** World point weapons should aim at, or null to hold fire. */
   aimWorld: V2 | null;
   fire: boolean;
+  /** Requested power routing, or null to keep the current mode. */
+  powerMode: PowerMode | null;
 };
 
-export const IDLE_INTENTS: ControlIntents = { thrust: 0, turn: 0, aimWorld: null, fire: false };
+export const IDLE_INTENTS: ControlIntents = { thrust: 0, turn: 0, aimWorld: null, fire: false, powerMode: null };
 
 /** What a controller may observe. */
 export type WorldView = {
@@ -36,7 +38,7 @@ function nearestFoe(self: Ship, world: WorldView): Ship | null {
   let best: Ship | null = null;
   let bestDistSq = Infinity;
   for (const other of world.ships) {
-    if (other.team === self.team || !other.alive) continue;
+    if (other.team === self.team || !other.inArena) continue;
     const dx = other.position.x - self.position.x;
     const dy = other.position.y - self.position.y;
     const dSq = dx * dx + dy * dy;
@@ -70,9 +72,15 @@ export class PlayerControl implements ControlSource {
   private mouseCanvas: V2 = { x: 0, y: 0 };
   private mouseDown = false;
   public autoFire = false;
+  private requestedMode: PowerMode = PowerMode.Balanced;
 
   private keydown = (e: KeyboardEvent) => {
     if (e.key === "t" || e.key === "T") this.autoFire = !this.autoFire;
+    if (e.key === "1") this.requestedMode = PowerMode.Weapons;
+    if (e.key === "2") this.requestedMode = PowerMode.Shields;
+    if (e.key === "3") this.requestedMode = PowerMode.Engines;
+    if (e.key === "4" || e.key === "j" || e.key === "J") this.requestedMode = PowerMode.Jump;
+    if (e.key === "0") this.requestedMode = PowerMode.Balanced;
     this.held.add(e.key);
   };
   private keyup = (e: KeyboardEvent) => { this.held.delete(e.key); };
@@ -124,6 +132,8 @@ export class PlayerControl implements ControlSource {
       this.mouseCanvas, this.canvas.width, this.canvas.height,
     );
 
+    const powerMode = this.requestedMode;
+
     // Turret assist: when on and the player isn't manually firing, track the
     // nearest foe with lead and shoot on its own.
     if (this.autoFire && !this.mouseDown) {
@@ -131,13 +141,13 @@ export class PlayerControl implements ControlSource {
       if (foe !== null) {
         const dist = Math.hypot(foe.position.x - self.position.x, foe.position.y - self.position.y);
         if (dist <= self.weaponRange) {
-          return { thrust, turn, aimWorld: leadPoint(self, foe), fire: true };
+          return { thrust, turn, aimWorld: leadPoint(self, foe), fire: true, powerMode };
         }
       }
-      return { thrust, turn, aimWorld: cursorWorld, fire: false };
+      return { thrust, turn, aimWorld: cursorWorld, fire: false, powerMode };
     }
 
-    return { thrust, turn, aimWorld: cursorWorld, fire: this.mouseDown };
+    return { thrust, turn, aimWorld: cursorWorld, fire: this.mouseDown, powerMode };
   }
 }
 
@@ -177,6 +187,7 @@ export class EnemyAI implements ControlSource {
       turn,
       aimWorld: inReach ? leadPoint(self, target) : null,
       fire: inReach,
+      powerMode: null,
     };
   }
 }

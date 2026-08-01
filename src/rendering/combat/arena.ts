@@ -6,7 +6,7 @@ import { Ship, type ProjectileSpawn, type Team } from "./ship";
 
 export type Projectile = ProjectileSpawn;
 
-export type ArenaStatus = "fighting" | "victory" | "defeat";
+export type ArenaStatus = "fighting" | "victory" | "defeat" | "escaped";
 
 export type EncounterShip = {
   hull: Pick<HullDef, "vertices" | "slots">;
@@ -60,12 +60,13 @@ export class Arena {
   }
 
   public get enemiesAlive(): number {
-    return this.combatants.filter(c => c.ship.team === "enemy" && c.ship.alive).length;
+    return this.combatants.filter(c => c.ship.team === "enemy" && c.ship.inArena).length;
   }
 
   public get status(): ArenaStatus {
     const player = this.playerShip;
     if (player !== null && !player.alive) return "defeat";
+    if (player !== null && player.jumpedOut && this.enemiesAlive > 0) return "escaped";
     if (this.enemiesAlive === 0) return "victory";
     return "fighting";
   }
@@ -73,20 +74,25 @@ export class Arena {
   public update(delta: number): void {
     this.stepCount += delta;
     const world: WorldView = { ships: this.ships };
+    const inCombat = this.enemiesAlive > 0
+      && this.combatants.some(c => c.ship.team === "player" && c.ship.inArena);
 
-    // Control + physics + weapons
+    // Control + physics + weapons + jump drives
     for (const c of this.combatants) {
+      if (c.ship.jumpedOut) continue;
       const intents = c.ship.alive ? c.control.update(c.ship, world) : IDLE_INTENTS;
       c.ship.physicsUpdate(intents, delta);
       c.ship.updateWeapons(intents, delta, (p) => this.projectiles.push(p));
+      c.ship.updateDrive(delta, inCombat);
       this.belt.resolveShip(c.ship);
     }
 
-    // Ship-vs-ship separation (both alive or not — wrecks still have mass)
+    // Ship-vs-ship separation (wrecks still have mass; jumped ships are gone)
     for (let i = 0; i < this.combatants.length; i++) {
       for (let j = i + 1; j < this.combatants.length; j++) {
         const a = this.combatants[i].ship;
         const b = this.combatants[j].ship;
+        if (a.jumpedOut || b.jumpedOut) continue;
         const dx = b.position.x - a.position.x;
         const dy = b.position.y - a.position.y;
         const minDist = a.colliderRadius + b.colliderRadius;
@@ -111,7 +117,7 @@ export class Arena {
 
       for (const c of this.combatants) {
         const ship = c.ship;
-        if (!ship.alive || ship.team === p.team) continue;
+        if (!ship.inArena || ship.team === p.team) continue;
         const dx = ship.position.x - p.pos.x;
         const dy = ship.position.y - p.pos.y;
         const r = ship.colliderRadius;
@@ -177,7 +183,7 @@ export class Arena {
     // Enemy status pips above their hulls
     for (const c of this.combatants) {
       const ship = c.ship;
-      if (ship.team !== "enemy" || !ship.alive) continue;
+      if (ship.team !== "enemy" || !ship.inArena) continue;
       const x = ship.position.x;
       const y = ship.position.y - ship.colliderRadius - 16;
       const w = 44;

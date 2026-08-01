@@ -48,6 +48,20 @@ export type ShieldStats = {
   chargeDelay: number;
 };
 
+export type ReactorStats = {
+  /** Power points available to feed the ship's total draw. */
+  output: number;
+  /** Whether this reactor supports live power rerouting (a later-game feature). */
+  allowReroute: boolean;
+};
+
+export type DriveStats = {
+  /** Seconds to full jump charge at a full power feed. */
+  chargeTime: number;
+  /** Whether the drive can charge while hostiles are present (stable jump tech). */
+  chargeInCombat: boolean;
+};
+
 export type ThrusterDef = BaseItemDef & {
   category: typeof ItemCategory.Thruster;
   stats: ThrusterStats;
@@ -63,13 +77,27 @@ export type ShieldDef = BaseItemDef & {
   stats: ShieldStats;
 };
 
-/** Categories that don't have typed stats yet (reactor, command, drive). */
+export type ReactorDef = BaseItemDef & {
+  category: typeof ItemCategory.Reactor;
+  stats: ReactorStats;
+};
+
+export type DriveDef = BaseItemDef & {
+  category: typeof ItemCategory.Drive;
+  stats: DriveStats;
+};
+
+/** Categories that don't have typed stats yet (command). */
 export type GenericItemDef = BaseItemDef & {
   category: Exclude<
     ItemCategory,
-    typeof ItemCategory.Thruster | typeof ItemCategory.Weapon | typeof ItemCategory.Shield
+    | typeof ItemCategory.Thruster
+    | typeof ItemCategory.Weapon
+    | typeof ItemCategory.Shield
+    | typeof ItemCategory.Reactor
+    | typeof ItemCategory.Drive
   >;
   stats: Record<string, number | string | boolean>;
 };
 
-export type ItemDef = ThrusterDef | WeaponDef | ShieldDef | GenericItemDef;
+export type ItemDef = ThrusterDef | WeaponDef | ShieldDef | ReactorDef | DriveDef | GenericItemDef;
