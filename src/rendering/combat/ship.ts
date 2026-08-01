@@ -1,5 +1,5 @@
-import type { ShipLoadout, V2 } from "../../types";
-import { BasicThrusterSlot } from "../../slots";
+import { ItemCategory, type HullDef, type V2 } from "../../types";
+import type { ItemDef, ThrusterStats } from "../../items";
 import { Angle } from "../utils";
 
 const DEFAULT_HULL: V2[] = [
@@ -8,10 +8,10 @@ const DEFAULT_HULL: V2[] = [
   { x: -33, y: 25 },
 ];
 
-/** A thruster slot that has been fully hydrated with a live item instance. */
+/** A hull slot with an equipped thruster, hydrated for the sim. */
 type ActiveThruster = {
   hardpoint: V2;
-  item: BasicThrusterSlot;
+  stats: ThrusterStats;
   trail: V2[];
 };
 
@@ -62,19 +62,26 @@ export class Ship {
   private keydownHook: ((e: KeyboardEvent) => void) | null = null;
   private keyupHook: ((e: KeyboardEvent) => void) | null = null;
 
-  constructor(pos: V2 = { x: 0, y: 0 }, loadout?: ShipLoadout) {
+  constructor(
+    pos: V2 = { x: 0, y: 0 },
+    hull?: Pick<HullDef, "vertices" | "slots">,
+    equipped?: (ItemDef | null)[],
+  ) {
     this.pos = pos;
-    this.hullVertices = loadout?.hullVertices ?? DEFAULT_HULL;
+    this.hullVertices = hull?.vertices ?? DEFAULT_HULL;
 
-    this.thrusters = (loadout?.thrusterSlots ?? [])
-      .filter((s): s is typeof s & { item: BasicThrusterSlot } => s.item instanceof BasicThrusterSlot)
-      .map(s => ({ hardpoint: s.hardpoint, item: s.item, trail: [] }));
+    this.thrusters = (hull?.slots ?? []).flatMap((slot, i) => {
+      const item = equipped?.[i];
+      return item?.category === ItemCategory.Thruster
+        ? [{ hardpoint: slot.hardpoint, stats: item.stats, trail: [] }]
+        : [];
+    });
 
     if (this.thrusters.length > 0) {
       const n = this.thrusters.length;
-      this.avgThrust = this.thrusters.reduce((sum, t) => sum + t.item.thrust, 0) / n;
+      this.avgThrust = this.thrusters.reduce((sum, t) => sum + t.stats.thrust, 0) / n;
       this.avgMaxTurnPerStep =
-        this.thrusters.reduce((sum, t) => sum + t.item.maxTurnRate, 0) / n / PHYSICS_HZ;
+        this.thrusters.reduce((sum, t) => sum + t.stats.maxTurnRate, 0) / n / PHYSICS_HZ;
     } else {
       // No thrusters — very slow RCS-only movement
       this.avgThrust = 0.15;
@@ -125,8 +132,8 @@ export class Ship {
 
       for (let i = 1; i < n; i++) {
         const frac = i / (n - 1); // 0 = oldest → 1 = newest
-        ctx.lineWidth = frac * t.item.trailWidth;
-        ctx.strokeStyle = t.item.trailColor(frac * 0.75);
+        ctx.lineWidth = frac * t.stats.trailWidth;
+        ctx.strokeStyle = `rgba(${t.stats.trailColor}, ${frac * 0.75})`;
         ctx.beginPath();
         ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
         ctx.lineTo(pts[i].x, pts[i].y);
@@ -264,7 +271,7 @@ export class Ship {
 
       if (thrusting) {
         t.trail.push({ x: wx, y: wy });
-        if (t.trail.length > t.item.trailLength) t.trail.shift();
+        if (t.trail.length > t.stats.trailLength) t.trail.shift();
       } else if (t.trail.length > 0) {
         t.trail.shift(); // drain trail when not thrusting
       }

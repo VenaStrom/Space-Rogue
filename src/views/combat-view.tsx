@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Camera, AsteroidBelt, Minimap, Ship, Starscape } from "../rendering/combat";
 import { useGameState } from "../context/game-state";
-import type { ShipLoadout } from "../types";
+import { resolveItems, type ItemDef } from "../items";
+import type { HullDef } from "../types";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 
@@ -11,8 +12,13 @@ type StatsElements = {
   camZoom: HTMLElement;
 };
 
-function main(ctx: CanvasRenderingContext2D, stats: StatsElements, initialLoadout: ShipLoadout): () => void {
-  const ship = new Ship({ x: 550, y: 4000 }, initialLoadout);
+type InitialFit = {
+  hull: HullDef;
+  equipped: (ItemDef | null)[];
+};
+
+function main(ctx: CanvasRenderingContext2D, stats: StatsElements, fit: InitialFit): () => void {
+  const ship = new Ship({ x: 550, y: 4000 }, fit.hull, fit.equipped);
   ship.hookControls();
 
   const starscape = new Starscape(8000, 8000);
@@ -86,9 +92,9 @@ export function CombatView() {
   const fpsRef = useRef<HTMLSpanElement>(null);
   const physRef = useRef<HTMLSpanElement>(null);
   const zoomRef = useRef<HTMLSpanElement>(null);
-  const { playerShip } = useGameState();
-  // Capture loadout once at mount time — changes in the editor take effect on re-entering combat
-  const loadoutRef = useRef(playerShip);
+  const { hull, equipped } = useGameState();
+  // Capture the fit once at mount time — changes in the editor take effect on re-entering combat
+  const fitRef = useRef<InitialFit>({ hull, equipped: resolveItems(equipped) });
 
   useEffect(() => {
     if (!canvasRef.current || !fpsRef.current || !physRef.current || !zoomRef.current) return;
@@ -96,7 +102,7 @@ export function CombatView() {
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current }, loadoutRef.current);
+    return main(ctx, { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current }, fitRef.current);
   }, []);
 
   return <main>

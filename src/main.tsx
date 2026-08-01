@@ -2,14 +2,16 @@ import "./global.tw.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app.tsx";
-import { GameStateProvider, MetaStateProvider } from "./context";
+import { GameStateProvider, MetaStateProvider, RunStateProvider } from "./context";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MetaStateProvider>
-      <GameStateProvider>
-        <App />
-      </GameStateProvider>
+      <RunStateProvider>
+        <GameStateProvider>
+          <App />
+        </GameStateProvider>
+      </RunStateProvider>
     </MetaStateProvider>
   </StrictMode>,
 );

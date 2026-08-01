@@ -1,12 +1,14 @@
 import { Route } from "./types";
-import { WorkshopView, CombatView, ShipEditorView } from "./views";
+import { WorkshopView, CombatView, ShipEditorView, MenuView, RunView } from "./views";
 import { useMetaState } from "./context/meta-state";
 import { RiFullscreenLine } from "@remixicon/react";
 
-const NAV_ROUTES: { label: string; route: Route }[] = [
-  { label: "Workshop", route: Route.Workshop },
-  { label: "Ship Editor", route: Route.ShipEditor },
-  { label: "Combat", route: Route.Combat },
+const NAV_ROUTES: { label: string; route: Route; dev?: boolean }[] = [
+  { label: "Menu", route: Route.Menu },
+  { label: "Run", route: Route.Run },
+  { label: "Workshop", route: Route.Workshop, dev: true },
+  { label: "Ship Editor", route: Route.ShipEditor, dev: true },
+  { label: "Combat", route: Route.Combat, dev: true },
 ];
 
 function App() {
@@ -21,21 +23,23 @@ function App() {
         Space Rogue
       </h2>
 
-      <nav className="flex gap-1">
-        {NAV_ROUTES.map(({ label, route: r }) => (
+      <nav className="flex gap-1 items-center">
+        {NAV_ROUTES.map(({ label, route: r, dev }, i) => (<span key={r} className="flex items-center">
+          {dev === true && NAV_ROUTES[i - 1]?.dev !== true
+            ? <span className="mx-2 text-xs text-gray-700 uppercase tracking-widest select-none">dev</span>
+            : null}
           <button
-            key={r}
             type="button"
             onClick={() => setRoute(r)}
             className={`px-3 py-1 text-sm rounded transition-colors ${
               route === r
                 ? "bg-gray-700 text-white"
                 : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-800"
-            }`}
+            } ${dev === true ? "opacity-70" : ""}`}
           >
             {label}
           </button>
-        ))}
+        </span>))}
       </nav>
 
       {/* Fullscreen button */}
@@ -62,6 +66,12 @@ function App() {
     {/* Router */}
     {(() => {
       switch (route) {
+        case Route.Menu:
+          return <MenuView />;
+
+        case Route.Run:
+          return <RunView />;
+
         case Route.Workshop:
           return <WorkshopView />;
 

@@ -1,12 +1,12 @@
 import { useState } from "react";
-import type { ShipLoadout } from "../../types";
-import type { SlotItem } from "../../slots";
+import type { HullDef } from "../../types";
 import { defaultGameStateContext, GameStateContext } from "./game-state.internal";
 
 export function GameStateProvider({ children }: { children: React.ReactNode }) {
   const [time, setTime] = useState(0);
-  const [playerShip, setPlayerShip] = useState<ShipLoadout>(defaultGameStateContext.playerShip);
-  const [inventory, setInventory] = useState<SlotItem[]>(defaultGameStateContext.inventory);
+  const [hull, setHull] = useState<HullDef>(defaultGameStateContext.hull);
+  const [equipped, setEquipped] = useState<(string | null)[]>(defaultGameStateContext.equipped);
+  const [inventory, setInventory] = useState<string[]>(defaultGameStateContext.inventory);
 
   const incrementTime = () => {
     setTime((prev) => prev + 1);
@@ -15,8 +15,10 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
   return <GameStateContext.Provider value={{
     time,
     incrementTime,
-    playerShip,
-    setPlayerShip,
+    hull,
+    setHull,
+    equipped,
+    setEquipped,
     inventory,
     setInventory,
   }}>

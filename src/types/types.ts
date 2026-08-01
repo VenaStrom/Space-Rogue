@@ -1,5 +1,4 @@
-import type { SlotItem } from "../slots";
-import type { SlotType } from "./consts";
+import type { ItemCategory, RunScreen } from "./consts";
 
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
@@ -20,21 +19,42 @@ export type Rect = {
 };
 
 /**
- * A single equipment slot on the player's ship.
+ * A mounting point on a hull. What fits is gated two ways: the item's category
+ * must be accepted, and its powerDraw must be at most the slot's powerRating.
  */
-export type Slot = {
-  type: SlotType;
-  item: SlotItem | SlotItem["id"] | null;
+export type HullSlotDef = {
+  accepts: ItemCategory[];
+  /** Power hookup quality, 1 (weak) – 3 (anything fits). */
+  powerRating: number;
   /** Ship-local coordinates of this mounting point (forward = +x, centroid at origin). */
   hardpoint: V2;
 };
 
-export type ShipLoadout = {
+/** A ship hull: geometry plus mounting points. Authored data, never mutated during a run. */
+export type HullDef = {
+  id: string;
+  name: string;
+  faction: string;
   /** Polygon vertices in ship-local space (forward = +x, centroid at origin). */
-  hullVertices: V2[];
-  weaponSlots: Slot[];
-  thrusterSlots: Slot[];
-  miscSlots: Slot[];
-  commandSlots: Slot[];
-  powerSlots: Slot[];
+  vertices: V2[];
+  slots: HullSlotDef[];
+  cargoCapacity: number;
+};
+
+/** The player ship within a run: a hull reference plus equipped item ids, parallel to `HullDef.slots`. */
+export type ShipFit = {
+  hullId: string;
+  equipped: (string | null)[];
+};
+
+/** Everything a run is. Fully serializable — this is exactly what gets saved. */
+export type RunState = {
+  seed: number;
+  sector: number;
+  credits: number;
+  visas: number;
+  screen: RunScreen;
+  ship: ShipFit;
+  /** Item ids in the cargo hold. */
+  cargo: string[];
 };
