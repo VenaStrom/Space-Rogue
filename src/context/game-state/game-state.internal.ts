@@ -24,6 +24,9 @@ const defaultInventory: string[] = [
   "basic-weapon",
   "burst-blaster",
   "basic-shield",
+  "gunner-cockpit",
+  "field-bridge",
+  "tactical-bridge",
 ];
 
 // Pre-filled fit so the dev Combat view is instantly a fight:
@@ -34,6 +37,7 @@ const defaultEquipped: (string | null)[] = emptyFit(CH_SLP).equipped.map((_, i) 
   if (i <= 9) return "basic-thruster";
   if (i === 10) return "basic-shield";
   if (i === 11) return "stable-drive";
+  if (i === 14) return "basic-cockpit";
   if (i === 16) return "relay-reactor";
   return null;
 });

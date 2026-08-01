@@ -1,4 +1,4 @@
-import { ItemCategory } from "../types";
+import { CommandKind, ItemCategory } from "../types";
 import type { ItemDef } from "./item-def";
 
 /**
@@ -67,7 +67,7 @@ export const ITEM_DEFS: ItemDef[] = [
     maxHealth: 15,
     powerDraw: 0,
     stats: {
-      output: 12,
+      output: 13,
       allowReroute: false,
     },
   },
@@ -80,8 +80,76 @@ export const ITEM_DEFS: ItemDef[] = [
     maxHealth: 14,
     powerDraw: 0,
     stats: {
-      output: 14,
+      output: 15,
       allowReroute: true,
+    },
+  },
+  {
+    id: "basic-cockpit",
+    name: "Standard Cockpit",
+    category: ItemCategory.Command,
+    subcategory: "cockpit",
+    mass: 6,
+    maxHealth: 12,
+    powerDraw: 1,
+    stats: {
+      kind: CommandKind.Cockpit,
+      manualFire: true,
+      navPoints: 0,
+      weaponBonus: 1,
+      shieldBonus: 1,
+      engineBonus: 1,
+    },
+  },
+  {
+    id: "gunner-cockpit",
+    name: "Gunner Cockpit",
+    category: ItemCategory.Command,
+    subcategory: "cockpit",
+    mass: 7,
+    maxHealth: 12,
+    powerDraw: 1,
+    stats: {
+      kind: CommandKind.Cockpit,
+      manualFire: true,
+      navPoints: 0,
+      weaponBonus: 1.2,
+      shieldBonus: 0.85,
+      engineBonus: 1,
+    },
+  },
+  {
+    id: "field-bridge",
+    name: "Field Bridge",
+    category: ItemCategory.Command,
+    subcategory: "bridge",
+    mass: 10,
+    maxHealth: 14,
+    powerDraw: 2,
+    stats: {
+      kind: CommandKind.Bridge,
+      manualFire: false,
+      navPoints: 3,
+      weaponBonus: 1.1,
+      shieldBonus: 1.25,
+      engineBonus: 1,
+    },
+  },
+  {
+    id: "tactical-bridge",
+    name: "Tactical Bridge",
+    category: ItemCategory.Command,
+    subcategory: "bridge",
+    mass: 11,
+    maxHealth: 14,
+    powerDraw: 2,
+    stats: {
+      kind: CommandKind.Bridge,
+      manualFire: true,
+      navPoints: 6,
+      weaponBonus: 1,
+      shieldBonus: 1.1,
+      engineBonus: 1.05,
     },
   },
   {

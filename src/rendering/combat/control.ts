@@ -24,14 +24,18 @@ export type WorldView = {
 };
 
 /**
- * The control seam. The cockpit (below), bridges (Phase 3), doctrine computers
- * (post-MVP), and enemy AI all produce intents through this interface — the
- * Ship itself never knows who is flying it.
+ * The control seam. Cockpits, bridges, doctrine computers (post-MVP), and
+ * enemy AI all produce intents through this interface — the Ship itself never
+ * knows who is flying it.
  */
 export type ControlSource = {
   update(self: Ship, world: WorldView): ControlIntents;
   attach?(): void;
   detach?(): void;
+  /** Time dilation while giving orders (1 = real time). */
+  readonly timeScale?: number;
+  /** Optional world-space overlay (nav points, focus reticle). Called inside the camera transform. */
+  renderWorld?(ctx: CanvasRenderingContext2D, self: Ship): void;
 };
 
 function nearestFoe(self: Ship, world: WorldView): Ship | null {
@@ -72,6 +76,8 @@ export class PlayerControl implements ControlSource {
   private mouseCanvas: V2 = { x: 0, y: 0 };
   private mouseDown = false;
   public autoFire = false;
+  /** Cockpits fly in real time — no tactical dilation. */
+  public readonly timeScale = 1;
   private requestedMode: PowerMode = PowerMode.Balanced;
 
   private keydown = (e: KeyboardEvent) => {
@@ -148,6 +154,192 @@ export class PlayerControl implements ControlSource {
     }
 
     return { thrust, turn, aimWorld: cursorWorld, fire: this.mouseDown, powerMode };
+  }
+}
+
+const NAV_ARRIVE_RADIUS = 90;
+const TACTICAL_TIME_SCALE = 0.25;
+
+const suppressContextMenu = (e: Event) => { e.preventDefault(); };
+
+/**
+ * Bridge control: the ship flies itself between plotted nav points while
+ * turrets auto-engage. LMB plots a nav point — or designates a focus target
+ * when clicking an enemy. C clears orders. RMB fires manually where allowed.
+ * Holding Space dilates time while you think.
+ */
+export class BridgeControl implements ControlSource {
+  private readonly canvas: HTMLCanvasElement;
+  private readonly camera: Camera;
+
+  private held = new Set<string>();
+  private mouseCanvas: V2 = { x: 0, y: 0 };
+  private rmbDown = false;
+  private pendingClick: V2 | null = null;
+  private requestedMode: PowerMode = PowerMode.Balanced;
+
+  private navQueue: V2[] = [];
+  private focus: Ship | null = null;
+
+  constructor(canvas: HTMLCanvasElement, camera: Camera) {
+    this.canvas = canvas;
+    this.camera = camera;
+  }
+
+  public get timeScale(): number {
+    return this.held.has(" ") ? TACTICAL_TIME_SCALE : 1;
+  }
+  public get navPoints(): readonly V2[] { return this.navQueue; }
+  public get focusTarget(): Ship | null { return this.focus; }
+
+  private keydown = (e: KeyboardEvent) => {
+    if (e.key === " ") e.preventDefault();
+    if (e.key === "c" || e.key === "C") this.clearOrders();
+    if (e.key === "1") this.requestedMode = PowerMode.Weapons;
+    if (e.key === "2") this.requestedMode = PowerMode.Shields;
+    if (e.key === "3") this.requestedMode = PowerMode.Engines;
+    if (e.key === "4" || e.key === "j" || e.key === "J") this.requestedMode = PowerMode.Jump;
+    if (e.key === "0") this.requestedMode = PowerMode.Balanced;
+    this.held.add(e.key);
+  };
+  private keyup = (e: KeyboardEvent) => { this.held.delete(e.key); };
+  private mousemove = (e: MouseEvent) => {
+    const rect = this.canvas.getBoundingClientRect();
+    this.mouseCanvas = {
+      x: (e.clientX - rect.left) * (this.canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (this.canvas.height / rect.height),
+    };
+  };
+  private mousedown = (e: MouseEvent) => {
+    if (e.button === 0) this.pendingClick = { ...this.mouseCanvas };
+    if (e.button === 2) this.rmbDown = true;
+  };
+  private mouseup = (e: MouseEvent) => { if (e.button === 2) this.rmbDown = false; };
+
+  public attach(): void {
+    window.addEventListener("keydown", this.keydown);
+    window.addEventListener("keyup", this.keyup);
+    this.canvas.addEventListener("mousemove", this.mousemove);
+    this.canvas.addEventListener("mousedown", this.mousedown);
+    this.canvas.addEventListener("contextmenu", suppressContextMenu);
+    window.addEventListener("mouseup", this.mouseup);
+  }
+
+  public detach(): void {
+    window.removeEventListener("keydown", this.keydown);
+    window.removeEventListener("keyup", this.keyup);
+    this.canvas.removeEventListener("mousemove", this.mousemove);
+    this.canvas.removeEventListener("mousedown", this.mousedown);
+    this.canvas.removeEventListener("contextmenu", suppressContextMenu);
+    window.removeEventListener("mouseup", this.mouseup);
+  }
+
+  // Public order API — also what the click handler routes into, and what tests drive.
+  public plotNav(worldPoint: V2, limit: number): void {
+    if (this.navQueue.length < limit) this.navQueue.push({ ...worldPoint });
+  }
+  public setFocus(target: Ship | null): void { this.focus = target; }
+  public clearOrders(): void {
+    this.navQueue = [];
+    this.focus = null;
+  }
+
+  private consumeClick(self: Ship, world: WorldView): void {
+    if (this.pendingClick === null) return;
+    const clickWorld = this.camera.screenToWorld(this.pendingClick, this.canvas.width, this.canvas.height);
+    this.pendingClick = null;
+
+    // Click on an enemy designates focus; anywhere else plots a nav point.
+    for (const other of world.ships) {
+      if (other.team === self.team || !other.inArena) continue;
+      const d = Math.hypot(other.position.x - clickWorld.x, other.position.y - clickWorld.y);
+      if (d <= other.colliderRadius * 1.4) {
+        this.setFocus(other);
+        return;
+      }
+    }
+    this.plotNav(clickWorld, self.navPointLimit);
+  }
+
+  public update(self: Ship, world: WorldView): ControlIntents {
+    this.consumeClick(self, world);
+
+    if (this.focus !== null && !this.focus.inArena) this.focus = null;
+
+    // Autopilot along the nav queue
+    let thrust = 0;
+    let turn = 0;
+    const waypoint = this.navQueue[0];
+    if (waypoint !== undefined) {
+      const dx = waypoint.x - self.position.x;
+      const dy = waypoint.y - self.position.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= NAV_ARRIVE_RADIUS) {
+        this.navQueue.shift();
+      } else {
+        const off = normalizeRadians(Math.atan2(dy, dx) - self.heading);
+        turn = Math.max(-1, Math.min(1, off * 3));
+        if (Math.abs(off) < 1.0) {
+          thrust = Math.max(0.25, Math.min(1, dist / 400));
+        }
+      }
+    }
+
+    // Turrets: manual override where the bridge allows it, otherwise auto-engage,
+    // preferring the designated focus target.
+    if (this.rmbDown && self.manualFireAllowed) {
+      const cursorWorld = this.camera.screenToWorld(this.mouseCanvas, this.canvas.width, this.canvas.height);
+      return { thrust, turn, aimWorld: cursorWorld, fire: true, powerMode: this.requestedMode };
+    }
+
+    const target = this.focus ?? nearestFoe(self, world);
+    if (target !== null) {
+      const dist = Math.hypot(target.position.x - self.position.x, target.position.y - self.position.y);
+      if (dist <= self.weaponRange) {
+        return { thrust, turn, aimWorld: leadPoint(self, target), fire: true, powerMode: this.requestedMode };
+      }
+    }
+    return { thrust, turn, aimWorld: null, fire: false, powerMode: this.requestedMode };
+  }
+
+  public renderWorld(ctx: CanvasRenderingContext2D, self: Ship): void {
+    // Nav route: dashed line from the ship through the queue, numbered nodes
+    if (this.navQueue.length > 0) {
+      ctx.strokeStyle = "rgba(190, 140, 255, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(self.position.x, self.position.y);
+      for (const p of this.navQueue) ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      this.navQueue.forEach((p, i) => {
+        ctx.fillStyle = "rgba(190, 140, 255, 0.25)";
+        ctx.strokeStyle = "rgba(190, 140, 255, 0.9)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#e8d6ff";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(`${i + 1}`, p.x, p.y + 4);
+        ctx.textAlign = "left";
+      });
+    }
+
+    // Focus reticle
+    if (this.focus !== null && this.focus.inArena) {
+      const r = this.focus.colliderRadius * 1.5;
+      ctx.strokeStyle = "rgba(255, 110, 110, 0.9)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 6]);
+      ctx.beginPath();
+      ctx.arc(this.focus.position.x, this.focus.position.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
   }
 }
 

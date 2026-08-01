@@ -1,4 +1,4 @@
-import type { Grade, ItemCategory } from "../types";
+import type { CommandKind, Grade, ItemCategory } from "../types";
 
 type BaseItemDef = {
   id: string;
@@ -62,6 +62,18 @@ export type DriveStats = {
   chargeInCombat: boolean;
 };
 
+export type CommandStats = {
+  /** Cockpit = direct piloting; bridge = orders (nav points + focus target). */
+  kind: CommandKind;
+  /** Whether manual weapon control is allowed — the flavor axis traded for buffs. */
+  manualFire: boolean;
+  /** Max queued nav points (bridge quality); 0 for cockpits. */
+  navPoints: number;
+  weaponBonus: number;
+  shieldBonus: number;
+  engineBonus: number;
+};
+
 export type ThrusterDef = BaseItemDef & {
   category: typeof ItemCategory.Thruster;
   stats: ThrusterStats;
@@ -87,17 +99,9 @@ export type DriveDef = BaseItemDef & {
   stats: DriveStats;
 };
 
-/** Categories that don't have typed stats yet (command). */
-export type GenericItemDef = BaseItemDef & {
-  category: Exclude<
-    ItemCategory,
-    | typeof ItemCategory.Thruster
-    | typeof ItemCategory.Weapon
-    | typeof ItemCategory.Shield
-    | typeof ItemCategory.Reactor
-    | typeof ItemCategory.Drive
-  >;
-  stats: Record<string, number | string | boolean>;
+export type CommandDef = BaseItemDef & {
+  category: typeof ItemCategory.Command;
+  stats: CommandStats;
 };
 
-export type ItemDef = ThrusterDef | WeaponDef | ShieldDef | ReactorDef | DriveDef | GenericItemDef;
+export type ItemDef = ThrusterDef | WeaponDef | ShieldDef | ReactorDef | DriveDef | CommandDef;

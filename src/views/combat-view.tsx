@@ -1,12 +1,23 @@
 import { useEffect, useRef } from "react";
 import {
-  Arena, AsteroidBelt, Camera, EnemyAI, Minimap, PlayerControl, Starscape,
+  Arena, AsteroidBelt, BridgeControl, Camera, EnemyAI, Minimap, PlayerControl, Starscape,
   type EncounterShip, type Ship,
 } from "../rendering/combat";
 import { useGameState } from "../context/game-state";
 import { resolveItems, type ItemDef } from "../items";
 import { CH_SLP } from "../ships";
-import type { HullDef } from "../types";
+import { CommandKind, ItemCategory, type HullDef } from "../types";
+
+type HelmControl = PlayerControl | BridgeControl;
+
+/** The command slot decides how the ship is flown — the whole point of the design. */
+function helmFor(equipped: (ItemDef | null)[], canvas: HTMLCanvasElement, camera: Camera): HelmControl {
+  const command = equipped.find(d => d?.category === ItemCategory.Command);
+  if (command?.category === ItemCategory.Command && command.stats.kind === CommandKind.Bridge) {
+    return new BridgeControl(canvas, camera);
+  }
+  return new PlayerControl(canvas, camera);
+}
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 const WORLD_W = 8000;
@@ -51,7 +62,7 @@ const POWER_MODE_COLOR: Record<string, string> = {
 function drawHud(
   ctx: CanvasRenderingContext2D,
   player: Ship | null,
-  control: PlayerControl,
+  control: HelmControl,
   status: "fighting" | "victory" | "defeat" | "escaped",
   enemiesAlive: number,
 ): void {
@@ -124,8 +135,18 @@ function drawHud(
       ctx.fillStyle = "#ff8d5e";
       ctx.fillText("NO REACTOR — EMERGENCY POWER", x, pipY - 24);
     }
-    ctx.fillStyle = control.autoFire ? "#ffd75e" : "rgba(255,255,255,0.25)";
-    ctx.fillText(`AUTO ${control.autoFire ? "ON" : "OFF"} [T]`, x, pipY - 12);
+    if (control instanceof PlayerControl) {
+      ctx.fillStyle = control.autoFire ? "#ffd75e" : "rgba(255,255,255,0.25)";
+      ctx.fillText(`AUTO ${control.autoFire ? "ON" : "OFF"} [T]`, x, pipY - 12);
+    } else {
+      ctx.fillStyle = "#c98aff";
+      const focus = control.focusTarget !== null ? "FOCUS LOCKED" : "no focus";
+      ctx.fillText(`BRIDGE · NAV ${control.navPoints.length}/${player.navPointLimit} · ${focus}`, x, pipY - 12);
+      if (control.timeScale < 1) {
+        ctx.fillStyle = "#e2b8ff";
+        ctx.fillText("TACTICAL TIME", x, pipY - 48);
+      }
+    }
   }
 
   // Enemy counter
@@ -158,7 +179,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements, fit: InitialF
   const belt = new AsteroidBelt(WORLD_W, WORLD_H);
   const minimap = new Minimap(WORLD_W, WORLD_H);
   const camera = new Camera();
-  const control = new PlayerControl(ctx.canvas, camera);
+  const control = helmFor(fit.equipped, ctx.canvas, camera);
   control.attach();
 
   function buildArena(): Arena {
@@ -206,8 +227,9 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements, fit: InitialF
     const deltaMS = Math.min(now - lastTime, 100);
     lastTime = now;
 
-    // Drain accumulator in fixed physics steps; count steps per render frame
-    accumulatedMS += deltaMS;
+    // Drain accumulator in fixed physics steps; count steps per render frame.
+    // Bridge tactical time dilates the simulation, not the render loop.
+    accumulatedMS += deltaMS * control.timeScale;
     let physSteps = 0;
     while (accumulatedMS >= PHYS_STEP_MS) {
       arena.update(1); // delta=1 is always one fixed step
@@ -229,6 +251,7 @@ function main(ctx: CanvasRenderingContext2D, stats: StatsElements, fit: InitialF
     starscape.render(ctx, camera.visibleRect(w, h));
     belt.render(ctx, camera.visibleRect(w, h));
     arena.render(ctx);
+    if (player !== null && control instanceof BridgeControl) control.renderWorld(ctx, player);
     camera.restoreTransform(ctx);
 
     const blips = [
@@ -303,7 +326,7 @@ export function CombatView() {
     </div>
 
     <p className="mt-2 text-xs text-gray-600 font-mono">
-      WASD fly · mouse aim · LMB fire · T turret auto · 1/2/3 power to wpn/shd/eng · 4 spool jump · 0 balanced · scroll zoom · R restart
+      cockpit: WASD fly · mouse aim · LMB fire · T turret auto — bridge: LMB plot nav / click enemy to focus · RMB manual fire · C clear · SPACE tactical time — both: 1/2/3 power wpn/shd/eng · 4 spool jump · 0 balanced · scroll zoom · R restart
     </p>
   </main>;
 }

@@ -19,6 +19,13 @@ export const ItemCategory = {
 } as const;
 export type ItemCategory = typeof ItemCategory[keyof typeof ItemCategory];
 
+/** The control styles a command item can grant. */
+export const CommandKind = {
+  Cockpit: "cockpit",
+  Bridge: "bridge",
+} as const;
+export type CommandKind = typeof CommandKind[keyof typeof CommandKind];
+
 /** Plain-language stat grades ("dumb terms, numbers for the nerds"). */
 export const Grade = {
   Bad: "bad",

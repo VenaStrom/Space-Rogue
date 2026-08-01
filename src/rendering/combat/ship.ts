@@ -1,5 +1,5 @@
-import { ItemCategory, type HullDef, type V2 } from "../../types";
-import type { DriveStats, ItemDef, ReactorStats, ThrusterStats, WeaponStats } from "../../items";
+import { CommandKind, ItemCategory, type HullDef, type V2 } from "../../types";
+import type { CommandStats, DriveStats, ItemDef, ReactorStats, ThrusterStats, WeaponStats } from "../../items";
 import { Angle, normalizeRadians } from "../utils";
 import type { ControlIntents } from "./control";
 
@@ -113,6 +113,7 @@ export class Ship {
 
   private reactor: ReactorStats | null = null;
   private drive: { stats: DriveStats; charge: number } | null = null;
+  private command: CommandStats | null = null;
   private powerMode: PowerMode = PowerMode.Balanced;
   /** Total powerDraw of everything equipped, for the output-vs-demand base factor. */
   private totalDemand = 0;
@@ -160,15 +161,25 @@ export class Ship {
     if (this.reactor === null) return EMERGENCY_POWER;
     return Math.min(1, this.reactor.output / Math.max(1, this.totalDemand));
   }
-  private get weaponFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].weapons; }
-  private get shieldFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].shields; }
-  private get engineFactor(): number { return this.basePower * MODE_FACTORS[this.powerMode].engines; }
+  private get weaponFactor(): number {
+    return this.basePower * MODE_FACTORS[this.powerMode].weapons * (this.command?.weaponBonus ?? 1);
+  }
+  private get shieldFactor(): number {
+    return this.basePower * MODE_FACTORS[this.powerMode].shields * (this.command?.shieldBonus ?? 1);
+  }
+  private get engineFactor(): number {
+    return this.basePower * MODE_FACTORS[this.powerMode].engines * (this.command?.engineBonus ?? 1);
+  }
   private get jumpFactor(): number {
     return this.reactor === null ? 0 : MODE_FACTORS[this.powerMode].jump;
   }
 
   public get currentPowerMode(): PowerMode { return this.powerMode; }
   public get canReroute(): boolean { return this.reactor?.allowReroute ?? false; }
+  /** Control style granted by the equipped command item; bare hulls fall back to direct control. */
+  public get commandKind(): CommandKind { return this.command?.kind ?? CommandKind.Cockpit; }
+  public get manualFireAllowed(): boolean { return this.command?.manualFire ?? true; }
+  public get navPointLimit(): number { return this.command?.navPoints ?? 0; }
   public get hasReactor(): boolean { return this.reactor !== null; }
   /** 0..1 jump drive charge, or null when no drive is equipped. */
   public get jumpCharge(): number | null { return this.drive ? this.drive.charge : null; }
@@ -234,6 +245,9 @@ export class Ship {
       } else if (item.category === ItemCategory.Drive) {
         // One drive is enough; the first equipped wins.
         this.drive ??= { stats: item.stats, charge: 0 };
+      } else if (item.category === ItemCategory.Command) {
+        // One command seat; the first equipped wins.
+        this.command ??= item.stats;
       }
       this.totalDemand += item.powerDraw;
     });
