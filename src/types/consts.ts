@@ -43,3 +43,12 @@ export const RunScreen = {
   Arena: "arena",
 } as const;
 export type RunScreen = typeof RunScreen[keyof typeof RunScreen];
+
+/** What a sector-map node holds. */
+export const NodeKind = {
+  Empty: "empty",
+  Combat: "combat",
+  Station: "station",
+  Gate: "gate",
+} as const;
+export type NodeKind = typeof NodeKind[keyof typeof NodeKind];

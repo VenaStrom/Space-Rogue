@@ -15,7 +15,7 @@ export function isHullId(value: unknown): value is string {
   return typeof value === "string" && HULLS.has(value);
 }
 
-/** A fresh fit for a hull: every slot empty. */
+/** A fresh fit for a hull: every slot empty, pristine hull. */
 export function emptyFit(hull: HullDef): ShipFit {
-  return { hullId: hull.id, equipped: hull.slots.map(() => null) };
+  return { hullId: hull.id, equipped: hull.slots.map(() => null), hullHp: 1 };
 }

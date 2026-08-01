@@ -8,12 +8,17 @@ export type Projectile = ProjectileSpawn;
 
 export type ArenaStatus = "fighting" | "victory" | "defeat" | "escaped";
 
+/** Where the player materializes in every encounter; encounters spawn around it. */
+export const PLAYER_SPAWN: Readonly<V2> = { x: 4000, y: 4000 };
+
 export type EncounterShip = {
   hull: Pick<HullDef, "vertices" | "slots">;
   equipped: (ItemDef | null)[];
   pos: V2;
   team: Team;
   control: ControlSource;
+  /** Starting hull integrity, 0..1 (persistent damage carried into the fight). */
+  hullFraction?: number;
 };
 
 export type LootDrop = {
@@ -45,7 +50,7 @@ export class Arena {
   constructor(belt: AsteroidBelt, entries: EncounterShip[]) {
     this.belt = belt;
     for (const e of entries) {
-      const ship = new Ship({ ...e.pos }, e.hull, e.equipped, e.team);
+      const ship = new Ship({ ...e.pos }, e.hull, e.equipped, e.team, e.hullFraction ?? 1);
       const aboard = e.equipped.filter((d): d is ItemDef => d !== null).map(d => d.id);
       this.combatants.push({ ship, control: e.control, aboard, wrecked: false });
     }

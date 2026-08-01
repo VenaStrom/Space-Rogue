@@ -27,7 +27,8 @@ export function RunStateProvider({ children }: { children: React.ReactNode }) {
   };
   const backToMenu = () => dispatch({ type: "back-to-menu" });
   const setScreen = (screen: RunScreen) => dispatch({ type: "set-screen", screen });
-  const patchRun = (patch: Partial<Omit<RunState, "ship">>) => dispatch({ type: "patch", patch });
+  const jumpTo = (nodeId: number) => dispatch({ type: "jump", nodeId });
+  const patchRun = (patch: Partial<RunState>) => dispatch({ type: "patch", patch });
 
   return <RunStateContext.Provider value={{
     phase: state.phase,
@@ -37,6 +38,7 @@ export function RunStateProvider({ children }: { children: React.ReactNode }) {
     die,
     backToMenu,
     setScreen,
+    jumpTo,
     patchRun,
   }}>
     {children}

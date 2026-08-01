@@ -202,9 +202,11 @@ export class Ship {
     hull?: Pick<HullDef, "vertices" | "slots">,
     equipped?: (ItemDef | null)[],
     team: Team = "player",
+    startHullFraction = 1,
   ) {
     this.pos = pos;
     this.team = team;
+    this.hp = this.maxHp * Math.max(0.01, Math.min(1, startHullFraction));
     this.hullVertices = hull?.vertices ?? DEFAULT_HULL;
 
     const maxReach = Math.max(...this.hullVertices.map(v => Math.hypot(v.x, v.y)));

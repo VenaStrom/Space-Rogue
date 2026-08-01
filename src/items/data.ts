@@ -14,6 +14,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 5,
     maxHealth: 10,
     powerDraw: 1,
+    price: 30,
     stats: {
       thrust: 1,
       maxTurnRate: Math.PI / 2,
@@ -30,6 +31,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 5,
     maxHealth: 10,
     powerDraw: 1,
+    price: 45,
     stats: {
       damage: 4,
       cooldown: 0.3,
@@ -48,6 +50,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 7,
     maxHealth: 10,
     powerDraw: 2,
+    price: 75,
     stats: {
       damage: 7,
       cooldown: 1.6,
@@ -66,6 +69,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 12,
     maxHealth: 15,
     powerDraw: 0,
+    price: 55,
     stats: {
       output: 13,
       allowReroute: false,
@@ -79,6 +83,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 14,
     maxHealth: 14,
     powerDraw: 0,
+    price: 100,
     stats: {
       output: 15,
       allowReroute: true,
@@ -92,6 +97,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 6,
     maxHealth: 12,
     powerDraw: 1,
+    price: 40,
     stats: {
       kind: CommandKind.Cockpit,
       manualFire: true,
@@ -109,6 +115,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 7,
     maxHealth: 12,
     powerDraw: 1,
+    price: 70,
     stats: {
       kind: CommandKind.Cockpit,
       manualFire: true,
@@ -126,6 +133,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 10,
     maxHealth: 14,
     powerDraw: 2,
+    price: 95,
     stats: {
       kind: CommandKind.Bridge,
       manualFire: false,
@@ -143,6 +151,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 11,
     maxHealth: 14,
     powerDraw: 2,
+    price: 115,
     stats: {
       kind: CommandKind.Bridge,
       manualFire: true,
@@ -160,6 +169,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 10,
     maxHealth: 12,
     powerDraw: 1,
+    price: 85,
     stats: {
       chargeTime: 20,
       chargeInCombat: true,
@@ -173,6 +183,7 @@ export const ITEM_DEFS: ItemDef[] = [
     mass: 8,
     maxHealth: 12,
     powerDraw: 1,
+    price: 65,
     stats: {
       capacity: 45,
       chargeRate: 7,

@@ -227,8 +227,16 @@ type ActiveSlot = {
   anchorRight: number;
 };
 
-export function WorkshopView() {
-  const { hull, equipped, setEquipped, inventory, setInventory } = useGameState();
+/**
+ * The fit editor, on props: the dev Workshop view feeds it sandbox state, the
+ * in-run Refit screen feeds it run state. Same UI, same rules.
+ */
+export function FitWorkshop({ hull, equipped, inventory, onUpdate }: {
+  hull: HullDef;
+  equipped: (string | null)[];
+  inventory: string[];
+  onUpdate: (next: { equipped: (string | null)[]; inventory: string[] }) => void;
+}) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedInvIdx, setSelectedInvIdx] = useState<number | null>(null);
   const [activeSlot, setActiveSlot] = useState<ActiveSlot | null>(null);
@@ -245,18 +253,21 @@ export function WorkshopView() {
 
   function equipIntoSlot(slotIdx: number, item: ItemDef, invIdx: number) {
     const previous = equipped[slotIdx];
-    setEquipped(prev => prev.map((id, i) => (i === slotIdx ? item.id : id)));
-    setInventory(inv => {
-      const without = inv.filter((_, i) => i !== invIdx);
-      return previous !== null ? [...without, previous] : without;
+    const nextEquipped = equipped.map((id, i) => (i === slotIdx ? item.id : id));
+    const without = inventory.filter((_, i) => i !== invIdx);
+    onUpdate({
+      equipped: nextEquipped,
+      inventory: previous !== null ? [...without, previous] : without,
     });
   }
 
   function unequipSlot(slotIdx: number) {
     const current = equipped[slotIdx];
     if (current === null) return;
-    setEquipped(prev => prev.map((id, i) => (i === slotIdx ? null : id)));
-    setInventory(inv => [...inv, current]);
+    onUpdate({
+      equipped: equipped.map((id, i) => (i === slotIdx ? null : id)),
+      inventory: [...inventory, current],
+    });
   }
 
   function handleSlotClick(slotIdx: number, e: React.MouseEvent<HTMLButtonElement>) {
@@ -397,4 +408,18 @@ export function WorkshopView() {
 
     </main>
   );
+}
+
+/** Dev sandbox wrapper: the workshop editing the persistent dev fit. */
+export function WorkshopView() {
+  const { hull, equipped, setEquipped, inventory, setInventory } = useGameState();
+  return <FitWorkshop
+    hull={hull}
+    equipped={equipped}
+    inventory={inventory}
+    onUpdate={(next) => {
+      setEquipped(next.equipped);
+      setInventory(next.inventory);
+    }}
+  />;
 }

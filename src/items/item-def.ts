@@ -9,6 +9,8 @@ type BaseItemDef = {
   maxHealth: number;
   /** Power the item needs from its slot's hookup (and, later, the reactor). */
   powerDraw: number;
+  /** Station buy price in credits; selling pays half. */
+  price: number;
   /** Plain-language grade per stat, shown as the primary rating in UI. */
   grades?: Record<string, Grade>;
 };

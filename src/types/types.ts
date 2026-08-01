@@ -1,4 +1,4 @@
-import type { ItemCategory, RunScreen } from "./consts";
+import type { ItemCategory, NodeKind, RunScreen } from "./consts";
 
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
@@ -45,6 +45,27 @@ export type HullDef = {
 export type ShipFit = {
   hullId: string;
   equipped: (string | null)[];
+  /** Persistent hull integrity, 0..1. Damage survives between fights; repairs cost credits. */
+  hullHp: number;
+};
+
+/** One system on the sector map. */
+export type MapNode = {
+  id: number;
+  /** Layout position in [0,1]², start at low x, gate at high x. */
+  pos: V2;
+  kind: NodeKind;
+  /** Node ids reachable in one jump (undirected). */
+  links: number[];
+  cleared: boolean;
+  /** Station shop stock (item ids); purchases remove entries. */
+  stock?: string[];
+};
+
+export type SectorMap = {
+  nodes: MapNode[];
+  /** Node id the ship is currently at. */
+  current: number;
 };
 
 /** Everything a run is. Fully serializable — this is exactly what gets saved. */
@@ -57,4 +78,7 @@ export type RunState = {
   ship: ShipFit;
   /** Item ids in the cargo hold. */
   cargo: string[];
+  map: SectorMap;
+  /** True after an illegal jump: the authorities are waiting at the current node. */
+  alert: boolean;
 };
