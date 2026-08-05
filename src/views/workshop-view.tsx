@@ -339,7 +339,7 @@ export function FitWorkshop({ hull, equipped, inventory, onUpdate }: {
 
       {/* Slot list */}
       <section
-        className="flex flex-row flex-wrap gap-x-15 gap-y-2 overflow-y-auto flex-1 min-h-0 px-4 py-3 rounded-xl border border-gray-800 bg-gray-950 shadow-[inset_0_1px_0_rgba(148,163,184,0.06)]"
+        className="flex flex-row flex-wrap gap-x-15 gap-y-2 overflow-y-auto flex-1 min-h-0 px-4 py-3 rounded-xl border border-gray-800 bg-gray-950 w-full shadow-[inset_0_1px_0_rgba(148,163,184,0.06)]"
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(148,163,184,0.055) 1px, transparent 1px)',
           backgroundSize: '22px 22px',

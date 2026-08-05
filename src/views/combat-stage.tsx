@@ -221,6 +221,10 @@ function main(
       ended = false;
       camera.centerOn(arena.playerShip!.position);
     }
+    // Dev builds only: K deletes every hostile through the normal death path
+    if (import.meta.env.DEV && (e.key === "k" || e.key === "K") && arena.status === "fighting") {
+      arena.killAllEnemies();
+    }
   };
   window.addEventListener("keydown", onKeydown);
 
@@ -338,4 +342,5 @@ export function CombatStage(props: StageProps) {
 }
 
 export const STAGE_CONTROLS_HINT =
-  "cockpit: WASD fly · mouse aim · LMB fire · T turret auto — bridge: LMB plot nav / click enemy to focus · RMB manual fire · C clear · SPACE tactical time — both: 1/2/3 power wpn/shd/eng · 4 spool jump · 0 balanced · scroll zoom";
+  "cockpit: WASD fly · mouse aim · LMB fire · T turret auto — bridge: LMB plot nav / click enemy to focus · RMB manual fire · C clear · SPACE tactical time — both: 1/2/3 power wpn/shd/eng · 4 spool jump · 0 balanced · scroll zoom"
+  + (import.meta.env.DEV ? " · K kill-all (dev)" : "");

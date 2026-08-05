@@ -141,6 +141,19 @@ export class Arena {
     });
   }
 
+  /** Dev helper: destroy every enemy through the normal damage seam, loot and all. */
+  public killAllEnemies(): void {
+    for (const c of this.combatants) {
+      if (c.ship.team !== "enemy" || !c.ship.alive) continue;
+      c.ship.applyDamage({
+        amount: Number.MAX_SAFE_INTEGER,
+        dir: { x: 1, y: 0 },
+        point: { ...c.ship.position },
+      });
+      this.onShipDeath(c);
+    }
+  }
+
   private onShipDeath(c: Combatant): void {
     if (c.wrecked) return;
     c.wrecked = true;
