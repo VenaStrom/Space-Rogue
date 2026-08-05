@@ -1,9 +1,14 @@
 import { useState } from "react";
+import {
+  RiArrowLeftLine, RiBox3Line, RiCoinsLine, RiMap2Line, RiPassportLine, RiPlanetLine,
+  RiShipLine, RiSkull2Line, RiStore2Line, RiSwordLine, RiToolsLine,
+} from "@remixicon/react";
 import { NodeKind, Route, RunScreen, type MapNode, type RunState } from "../types";
 import { useMetaState } from "../context/meta-state";
 import { useRunState } from "../context/run-state";
 import { getHullDef } from "../ships";
 import { getItemDef, resolveItems } from "../items";
+import { FACTIONS } from "../factions";
 import { PLAYER_SPAWN } from "../rendering/combat";
 import { authorityEncounter, raiderEncounter } from "../run/encounters";
 import { CombatStage, STAGE_CONTROLS_HINT, type CombatResult, type StageEnemy } from "./combat-stage";
@@ -12,18 +17,18 @@ import { FitWorkshop } from "./workshop-view";
 const VISA_PRICE = 40;
 const REPAIR_PRICE_FULL = 60;
 
-const SCREEN_LABEL: Record<RunScreen, string> = {
-  map: "Map",
-  refit: "Refit",
-  arena: "Arena",
+const SCREEN_META: Record<RunScreen, { label: string; Icon: typeof RiMap2Line }> = {
+  map: { label: "Map", Icon: RiMap2Line },
+  refit: { label: "Refit", Icon: RiToolsLine },
+  arena: { label: "Arena", Icon: RiSwordLine },
 };
 
-const NODE_COLOR: Record<NodeKind, string> = {
-  empty: "#6b7280",
-  combat: "#e05a5a",
-  station: "#eab308",
-  gate: "#c084fc",
-};
+/** Node glyph color: the owning faction's, or neutral gray / gate purple. */
+function nodeColor(node: MapNode): string {
+  if (node.kind === NodeKind.Gate) return "#c084fc";
+  if (node.faction !== null) return FACTIONS[node.faction].color;
+  return "#6b7280";
+}
 
 const NODE_LABEL: Record<NodeKind, string> = {
   empty: "Empty space",
@@ -31,6 +36,28 @@ const NODE_LABEL: Record<NodeKind, string> = {
   station: "Station",
   gate: "Sector gate",
 };
+
+/** Up to three faction-colored threat pips above a hostile node. */
+function ThreatPips({ node }: { node: MapNode }) {
+  if (node.kind !== NodeKind.Combat || node.cleared || node.enemies <= 0) return null;
+  const count = Math.min(3, node.enemies);
+  const color = node.faction !== null ? FACTIONS[node.faction].color : "#e05a5a";
+  const cx = node.pos.x * 100;
+  const cy = node.pos.y * 60 + 1;
+  return <>
+    {Array.from({ length: count }, (_, i) => {
+      const x = cx + (i - (count - 1) / 2) * 2.2;
+      const y = cy - 3.4;
+      return (
+        <polygon
+          key={i}
+          points={`${x},${y - 1.5} ${x - 0.85},${y} ${x + 0.85},${y}`}
+          fill={color}
+        />
+      );
+    })}
+  </>;
+}
 
 // ── Map screen ────────────────────────────────────────────────────────────────
 
@@ -76,6 +103,8 @@ function SectorMapScreen({ run }: { run: RunState }) {
         const isCurrent = n.id === run.map.current;
         const adjacent = current?.links.includes(n.id) ?? false;
         const dim = n.kind === NodeKind.Combat && n.cleared;
+        const cx = n.pos.x * 100;
+        const cy = n.pos.y * 60 + 1;
         return (
           <g
             key={n.id}
@@ -83,18 +112,31 @@ function SectorMapScreen({ run }: { run: RunState }) {
             style={{ cursor: adjacent ? "pointer" : "default" }}
           >
             {adjacent ? (
-              <circle cx={n.pos.x * 100} cy={n.pos.y * 60 + 1} r={3.2}
+              <circle cx={cx} cy={cy} r={3.2}
                 fill="none" stroke="rgba(120,175,255,0.5)" strokeWidth={0.4}>
                 <animate attributeName="r" values="2.8;3.6;2.8" dur="1.6s" repeatCount="indefinite" />
               </circle>
             ) : null}
-            <circle
-              cx={n.pos.x * 100} cy={n.pos.y * 60 + 1} r={2}
-              fill={NODE_COLOR[n.kind]}
-              opacity={dim ? 0.35 : 1}
-            />
+
+            {n.kind === NodeKind.Station ? (
+              // Station: faction-colored diamond with a docking mast
+              <>
+                <rect
+                  x={cx - 1.6} y={cy - 1.6} width={3.2} height={3.2}
+                  transform={`rotate(45 ${cx} ${cy})`}
+                  fill={nodeColor(n)}
+                />
+                <line x1={cx} y1={cy - 2.3} x2={cx} y2={cy - 3.4} stroke={nodeColor(n)} strokeWidth={0.5} />
+                <circle cx={cx} cy={cy - 3.7} r={0.5} fill={nodeColor(n)} />
+              </>
+            ) : (
+              <circle cx={cx} cy={cy} r={2} fill={nodeColor(n)} opacity={dim ? 0.35 : 1} />
+            )}
+
+            <ThreatPips node={n} />
+
             {isCurrent ? (
-              <circle cx={n.pos.x * 100} cy={n.pos.y * 60 + 1} r={2.9}
+              <circle cx={cx} cy={cy} r={2.9}
                 fill="none" stroke="#fff" strokeWidth={0.45} />
             ) : null}
           </g>
@@ -106,7 +148,14 @@ function SectorMapScreen({ run }: { run: RunState }) {
     <aside className="w-72 flex flex-col gap-3 text-sm overflow-y-auto min-h-0">
       <div className="border border-gray-800 rounded-xl bg-gray-950 p-3">
         <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">Current system</p>
-        <p>{current !== undefined ? NODE_LABEL[current.kind] : "?"}</p>
+        <p>
+          {current !== undefined ? NODE_LABEL[current.kind] : "?"}
+          {current?.faction != null ? (
+            <span className="text-xs ml-2" style={{ color: FACTIONS[current.faction].color }}>
+              {FACTIONS[current.faction].name}
+            </span>
+          ) : null}
+        </p>
         <p className="text-xs text-gray-600 mt-1">
           {run.visas > 0
             ? `${run.visas} visa${run.visas === 1 ? "" : "s"} — jumps are legal`
@@ -120,7 +169,11 @@ function SectorMapScreen({ run }: { run: RunState }) {
 
       <div className="border border-gray-800 rounded-xl bg-gray-950 p-3 text-xs text-gray-600">
         <p>Click a pulsing node to jump (1 visa).</p>
-        <p className="mt-1">Red = hostiles · yellow = station · purple = sector gate.</p>
+        <p className="mt-1">
+          <span style={{ color: FACTIONS.outlaws.color }}>▲</span> one per hostile (3 = 3 or more) ·{" "}
+          <span style={{ color: FACTIONS.traders.color }}>◆</span> station ·{" "}
+          <span className="text-purple-400">●</span> sector gate
+        </p>
       </div>
     </aside>
   </div>;
@@ -170,22 +223,24 @@ function StationPanel({ run, station, patchRun, cargoCapacity }: {
   }
 
   return <div className="border border-yellow-900 rounded-xl bg-gray-950 p-3 flex flex-col gap-2">
-    <p className="text-xs uppercase tracking-widest text-yellow-600">Station services</p>
+    <p className="text-xs uppercase tracking-widest text-yellow-600 flex items-center gap-1.5">
+      <RiStore2Line size={14} /> Station services
+    </p>
 
     <button type="button"
-      className="text-left px-2 py-1.5 rounded border border-blue-900 text-blue-300 hover:bg-blue-950 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="text-left px-2 py-1.5 rounded border border-blue-900 text-blue-300 hover:bg-blue-950 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
       disabled={run.credits < VISA_PRICE}
       onClick={() => patchRun({ credits: run.credits - VISA_PRICE, visas: run.visas + 1 })}
     >
-      Buy jump visa — {VISA_PRICE} cr
+      <RiPassportLine size={14} /> Buy jump visa — {VISA_PRICE} cr
     </button>
 
     <button type="button"
-      className="text-left px-2 py-1.5 rounded border border-green-900 text-green-300 hover:bg-green-950 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="text-left px-2 py-1.5 rounded border border-green-900 text-green-300 hover:bg-green-950 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
       disabled={missingHull <= 0.001 || run.credits < repairCost}
       onClick={() => patchRun({ credits: run.credits - repairCost, ship: { ...run.ship, hullHp: 1 } })}
     >
-      {missingHull <= 0.001 ? "Hull intact" : `Repair hull — ${repairCost} cr`}
+      <RiToolsLine size={14} /> {missingHull <= 0.001 ? "Hull intact" : `Repair hull — ${repairCost} cr`}
     </button>
 
     <p className="text-xs uppercase tracking-widest text-gray-500 mt-1">For sale</p>
@@ -234,7 +289,7 @@ function ArenaScreen({ run }: { run: RunState }) {
   const node = run.map.nodes.find(n => n.id === run.map.current);
   const enemies: StageEnemy[] = (run.alert
     ? authorityEncounter(run.seed, run.sector, PLAYER_SPAWN)
-    : raiderEncounter(run.seed, run.sector, node?.id ?? 0, PLAYER_SPAWN)
+    : raiderEncounter(run.seed, run.sector, node?.id ?? 0, PLAYER_SPAWN, node?.enemies)
   ).map(e => ({
     hull: getHullDef(e.hullId) ?? hull,
     equipped: resolveItems(e.equipped),
@@ -335,6 +390,7 @@ export function RunView() {
 
   if (phase === "dead" && run !== null) {
     return <main className="p-6 flex flex-col items-center gap-4 pt-24">
+      <RiSkull2Line size={48} className="text-red-400" />
       <h2 className="text-2xl font-semibold tracking-widest uppercase text-red-400">Ship destroyed</h2>
       <div className="text-sm text-gray-400 text-center leading-relaxed">
         <p>Reached sector {run.sector}.</p>
@@ -342,13 +398,13 @@ export function RunView() {
         <p className="text-xs text-gray-600 font-mono mt-2">seed {run.seed}</p>
       </div>
       <button type="button"
-        className="px-4 py-3 rounded border border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 transition-colors"
+        className="px-4 py-3 rounded border border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 transition-colors flex items-center gap-2"
         onClick={() => {
           backToMenu();
           setRoute(Route.Menu);
         }}
       >
-        Back to menu
+        <RiArrowLeftLine size={16} /> Back to menu
       </button>
     </main>;
   }
@@ -357,10 +413,10 @@ export function RunView() {
     return <main className="p-6 flex flex-col items-center gap-6 pt-24">
       <p className="text-sm text-gray-500">No active run.</p>
       <button type="button"
-        className="px-4 py-3 rounded border border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 transition-colors"
+        className="px-4 py-3 rounded border border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 transition-colors flex items-center gap-2"
         onClick={() => setRoute(Route.Menu)}
       >
-        Back to menu
+        <RiArrowLeftLine size={16} /> Back to menu
       </button>
     </main>;
   }
@@ -371,29 +427,34 @@ export function RunView() {
   return <main className="p-6 flex flex-col gap-4 items-stretch w-full max-w-6xl mx-auto min-h-0 overflow-hidden">
     {/* Run header */}
     <div className="flex items-center gap-6 text-sm">
-      <span className="uppercase tracking-widest text-gray-500">Sector {run.sector}</span>
-      <span className="text-yellow-400">{run.credits} cr</span>
-      <span className="text-blue-300">{run.visas} visas</span>
-      <span className="text-green-400">hull {Math.round(run.ship.hullHp * 100)}%</span>
-      <span className="text-gray-600">cargo {run.cargo.length}/{hull?.cargoCapacity ?? "?"}</span>
+      <span className="uppercase tracking-widest text-gray-500 flex items-center gap-1.5">
+        <RiPlanetLine size={14} /> Sector {run.sector}
+      </span>
+      <span className="text-yellow-400 flex items-center gap-1.5"><RiCoinsLine size={14} /> {run.credits}</span>
+      <span className="text-blue-300 flex items-center gap-1.5"><RiPassportLine size={14} /> {run.visas}</span>
+      <span className="text-green-400 flex items-center gap-1.5"><RiShipLine size={14} /> {Math.round(run.ship.hullHp * 100)}%</span>
+      <span className="text-gray-500 flex items-center gap-1.5"><RiBox3Line size={14} /> {run.cargo.length}/{hull?.cargoCapacity ?? "?"}</span>
       <span className="ml-auto text-xs text-gray-700 font-mono">seed {run.seed}</span>
     </div>
 
     {/* Screen tabs — locked while a fight is on */}
     <div className="flex rounded overflow-hidden border border-gray-700 w-fit">
-      {Object.values(RunScreen).map((screen) => (
-        <button type="button"
-          key={screen}
-          disabled={inArena ? screen !== RunScreen.Arena : false}
-          className={`px-4 py-1.5 text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${run.screen === screen
-            ? "bg-gray-700 text-white"
-            : "bg-gray-900 text-gray-400 hover:bg-gray-800"
-            }`}
-          onClick={() => setScreen(screen)}
-        >
-          {SCREEN_LABEL[screen]}
-        </button>
-      ))}
+      {Object.values(RunScreen).map((screen) => {
+        const { label, Icon } = SCREEN_META[screen];
+        return (
+          <button type="button"
+            key={screen}
+            disabled={inArena ? screen !== RunScreen.Arena : false}
+            className={`px-4 py-1.5 text-sm transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${run.screen === screen
+              ? "bg-gray-700 text-white"
+              : "bg-gray-900 text-gray-400 hover:bg-gray-800"
+              }`}
+            onClick={() => setScreen(screen)}
+          >
+            <Icon size={14} /> {label}
+          </button>
+        );
+      })}
     </div>
 
     {run.screen === RunScreen.Map ? <SectorMapScreen run={run} /> : null}

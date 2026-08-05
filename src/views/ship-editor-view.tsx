@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useGameState } from "../context/game-state";
 import { ItemCategory, isItemCategory, isObj, isV2, type HullDef, type HullSlotDef, type V2 } from "../types";
+import { isFactionId } from "../factions";
 
 const VIEW_W = 300;
 const VIEW_H = 200;
@@ -92,7 +93,7 @@ function isHullSlotDef(s: unknown): s is HullSlotDef {
 
 function parseHullDef(raw: unknown): HullDef | null {
   if (!isObj(raw)) return null;
-  if (typeof raw.id !== "string" || typeof raw.name !== "string" || typeof raw.faction !== "string") return null;
+  if (typeof raw.id !== "string" || typeof raw.name !== "string" || !isFactionId(raw.faction)) return null;
   if (typeof raw.cargoCapacity !== "number") return null;
   if (!Array.isArray(raw.vertices) || !raw.vertices.every(isV2) || raw.vertices.length < 3) return null;
   if (!Array.isArray(raw.slots) || !raw.slots.every(isHullSlotDef)) return null;

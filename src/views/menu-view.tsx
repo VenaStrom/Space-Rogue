@@ -1,3 +1,4 @@
+import { RiDeleteBinLine, RiPlayLine, RiRocket2Line } from "@remixicon/react";
 import { Route } from "../types";
 import { useMetaState } from "../context/meta-state";
 import { useRunState } from "../context/run-state";
@@ -17,30 +18,30 @@ export function MenuView() {
           className="px-4 py-3 rounded border border-green-700 bg-green-950 text-green-300 hover:bg-green-900 transition-colors"
           onClick={() => setRoute(Route.Run)}
         >
-          Continue run
+          <span className="flex items-center justify-center gap-2"><RiPlayLine size={16} /> Continue run</span>
           <span className="block text-xs text-green-600">
             Sector {run.sector} · {run.credits} cr · {run.visas} visas
           </span>
         </button>
         <button type="button"
-          className="px-4 py-3 rounded border border-red-900 bg-gray-950 text-red-400 hover:bg-red-950 transition-colors"
+          className="px-4 py-3 rounded border border-red-900 bg-gray-950 text-red-400 hover:bg-red-950 transition-colors flex items-center justify-center gap-2"
           onClick={() => {
             if (window.confirm("Abandon the current run? The save is deleted.")) {
               abandonRun();
             }
           }}
         >
-          Abandon run
+          <RiDeleteBinLine size={16} /> Abandon run
         </button>
       </> : (
         <button type="button"
-          className="px-4 py-3 rounded border border-green-700 bg-green-950 text-green-300 hover:bg-green-900 transition-colors"
+          className="px-4 py-3 rounded border border-green-700 bg-green-950 text-green-300 hover:bg-green-900 transition-colors flex items-center justify-center gap-2"
           onClick={() => {
             startRun();
             setRoute(Route.Run);
           }}
         >
-          New run
+          <RiRocket2Line size={16} /> New run
         </button>
       )}
     </div>

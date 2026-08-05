@@ -49,7 +49,7 @@ const store = new Map<string, string>();
     }
     assert.equal(seen.size, n, `map fully connected (seed ${seed})`);
 
-    // Symmetric links, stations stocked
+    // Symmetric links, stations stocked, threat intel + factions assigned
     for (const node of map.nodes) {
       for (const link of node.links) {
         assert.ok(map.nodes[link].links.includes(node.id), "links are undirected");
@@ -57,6 +57,13 @@ const store = new Map<string, string>();
       if (node.kind === NodeKind.Station) {
         assert.equal(node.stock?.length, 4, "stations carry 4 items");
         assert.ok(node.stock!.every(isItemId), "stock ids are real items");
+        assert.equal(node.faction, "traders", "stations belong to the traders");
+      }
+      if (node.kind === NodeKind.Combat) {
+        assert.ok(node.enemies >= 1 && node.enemies <= 5, "hostile nodes carry a pack size");
+        assert.equal(node.faction, "outlaws", "raiders are outlaws");
+      } else {
+        assert.equal(node.enemies, 0, "peaceful nodes have no hostiles");
       }
       assert.equal(node.cleared, node.kind !== NodeKind.Combat, "only combat starts uncleared");
     }

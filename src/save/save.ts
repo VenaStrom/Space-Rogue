@@ -2,6 +2,7 @@ import type { MapNode, RunState, SectorMap, ShipFit } from "../types";
 import { NodeKind, isObj, isRunScreen, isV2 } from "../types";
 import { getHullDef, isHullId } from "../ships";
 import { isItemId } from "../items";
+import { isFactionId } from "../factions";
 
 const SAVE_KEY = "space-rogue.save.v2";
 
@@ -14,7 +15,19 @@ function parseMapNode(raw: unknown): MapNode | null {
   if (typeof raw.id !== "number" || !isV2(raw.pos) || !isNodeKind(raw.kind)) return null;
   if (!Array.isArray(raw.links) || !raw.links.every((l): l is number => typeof l === "number")) return null;
   if (typeof raw.cleared !== "boolean") return null;
-  const node: MapNode = { id: raw.id, pos: raw.pos, kind: raw.kind, links: raw.links, cleared: raw.cleared };
+  const node: MapNode = {
+    id: raw.id,
+    pos: raw.pos,
+    kind: raw.kind,
+    links: raw.links,
+    cleared: raw.cleared,
+    // Tolerant defaults so pre-intel saves keep working
+    enemies: typeof raw.enemies === "number" ? raw.enemies : (raw.kind === NodeKind.Combat ? 2 : 0),
+    faction: isFactionId(raw.faction) ? raw.faction
+      : raw.kind === NodeKind.Combat ? "outlaws"
+        : raw.kind === NodeKind.Station ? "traders"
+          : null,
+  };
   if (Array.isArray(raw.stock)) node.stock = raw.stock.filter(isItemId);
   return node;
 }

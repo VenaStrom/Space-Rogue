@@ -1,4 +1,4 @@
-import type { ItemCategory, NodeKind, RunScreen } from "./consts";
+import type { FactionId, ItemCategory, NodeKind, RunScreen } from "./consts";
 
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
@@ -34,7 +34,7 @@ export type HullSlotDef = {
 export type HullDef = {
   id: string;
   name: string;
-  faction: string;
+  faction: FactionId;
   /** Polygon vertices in ship-local space (forward = +x, centroid at origin). */
   vertices: V2[];
   slots: HullSlotDef[];
@@ -58,6 +58,10 @@ export type MapNode = {
   /** Node ids reachable in one jump (undirected). */
   links: number[];
   cleared: boolean;
+  /** Hostile ship count at this node (0 for peaceful nodes). */
+  enemies: number;
+  /** Who owns what's here — colors every glyph drawn for this node. */
+  faction: FactionId | null;
   /** Station shop stock (item ids); purchases remove entries. */
   stock?: string[];
 };

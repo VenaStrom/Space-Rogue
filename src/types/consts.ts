@@ -44,6 +44,15 @@ export const RunScreen = {
 } as const;
 export type RunScreen = typeof RunScreen[keyof typeof RunScreen];
 
+/** Everyone who owns ships, stations, or grudges. */
+export const FactionId = {
+  Republic: "republic",
+  Outlaws: "outlaws",
+  Authorities: "authorities",
+  Traders: "traders",
+} as const;
+export type FactionId = typeof FactionId[keyof typeof FactionId];
+
 /** What a sector-map node holds. */
 export const NodeKind = {
   Empty: "empty",

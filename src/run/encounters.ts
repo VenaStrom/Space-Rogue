@@ -1,5 +1,6 @@
 import type { V2 } from "../types";
 import { deriveSeed, mulberry32 } from "../rng";
+import { sectorPackSize } from "./map-gen";
 
 export type EncounterFit = {
   hullId: string;
@@ -52,9 +53,9 @@ function spawnRing(rand: () => number, count: number, center: V2, minDist: numbe
 }
 
 /** Raider pack for a combat node; size and gear scale with the sector. */
-export function raiderEncounter(runSeed: number, sector: number, nodeId: number, playerSpawn: V2): EncounterFit[] {
+export function raiderEncounter(runSeed: number, sector: number, nodeId: number, playerSpawn: V2, packSize?: number): EncounterFit[] {
   const rand = mulberry32(deriveSeed(runSeed, sector * 1000 + nodeId));
-  const count = Math.min(2 + Math.floor((sector - 1) / 1.5), 5);
+  const count = packSize ?? sectorPackSize(sector);
   const tier = Math.min(sector - 1, RAIDER_TIERS.length - 1);
   const positions = spawnRing(rand, count, playerSpawn, 1300);
   return positions.map((pos) => {

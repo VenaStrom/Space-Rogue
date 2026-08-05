@@ -1,6 +1,11 @@
-import { NodeKind, type MapNode, type SectorMap } from "../types";
+import { FactionId, NodeKind, type MapNode, type SectorMap } from "../types";
 import { deriveSeed, mulberry32 } from "../rng";
 import { ITEM_DEFS } from "../items";
+
+/** Baseline raider pack size for a sector (before per-node variance). */
+export function sectorPackSize(sector: number): number {
+  return Math.min(2 + Math.floor((sector - 1) / 1.5), 5);
+}
 
 const NODE_COUNT_MIN = 10;
 const NODE_COUNT_SPAN = 4;
@@ -53,12 +58,20 @@ export function generateSectorMap(runSeed: number, sector: number): SectorMap {
   }
 
   const nodes: MapNode[] = positions.map((pos, id) => {
+    const kind = kinds[id];
+    const packJitter = rand() < 0.25 ? -1 : rand() > 0.75 ? 1 : 0;
     const node: MapNode = {
       id,
       pos,
-      kind: kinds[id],
+      kind,
       links: [...links[id]].sort((a, b) => a - b),
-      cleared: kinds[id] !== NodeKind.Combat,
+      cleared: kind !== NodeKind.Combat,
+      enemies: kind === NodeKind.Combat
+        ? Math.max(1, Math.min(5, sectorPackSize(sector) + packJitter))
+        : 0,
+      faction: kind === NodeKind.Combat ? FactionId.Outlaws
+        : kind === NodeKind.Station ? FactionId.Traders
+          : null,
     };
     if (node.kind === NodeKind.Station) {
       // 4 shop picks, seeded; buying removes them for good
