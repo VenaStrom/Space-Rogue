@@ -17,7 +17,7 @@ export const ITEM_DEFS: ItemDef[] = [
     price: 30,
     stats: {
       thrust: 1,
-      maxTurnRate: Math.PI / 2,
+      maxTurnRate: 0.7, // rad/s — capital ships turn like capital ships
       trailLength: 20,
       trailWidth: 5,
       trailColor: "128, 216, 255",
@@ -33,10 +33,10 @@ export const ITEM_DEFS: ItemDef[] = [
     powerDraw: 1,
     price: 45,
     stats: {
-      damage: 4,
-      cooldown: 0.3,
-      projectileSpeed: 900,
-      lifetime: 1.5,
+      damage: 5,
+      cooldown: 0.9,
+      projectileSpeed: 650,
+      lifetime: 2.2,
       arc: 110,
       burst: 1,
       burstInterval: 0,
@@ -52,13 +52,13 @@ export const ITEM_DEFS: ItemDef[] = [
     powerDraw: 2,
     price: 75,
     stats: {
-      damage: 7,
-      cooldown: 1.6,
-      projectileSpeed: 750,
-      lifetime: 1.2,
+      damage: 8,
+      cooldown: 3.2,
+      projectileSpeed: 600,
+      lifetime: 2,
       arc: 130,
       burst: 3,
-      burstInterval: 0.09,
+      burstInterval: 0.18,
     },
   },
   {

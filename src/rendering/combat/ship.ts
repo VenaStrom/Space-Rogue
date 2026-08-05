@@ -4,7 +4,14 @@ import { Angle, normalizeRadians } from "../utils";
 import type { ControlIntents } from "./control";
 
 export const PHYSICS_HZ = 60;
-const THRUST_SCALE = 0.08;
+/** Capital-ship pacing: low acceleration, mass you can feel. */
+const THRUST_SCALE = 0.04;
+/** Angular acceleration per step at full turn intent. */
+const TURN_ACCEL = 0.0025;
+/** Angular damping — capital ships are slow to start and stop turning. */
+const ANGULAR_DAMPING = 0.92;
+/** Lateral velocity damping — heavy hulls drift through turns. */
+const LATERAL_DAMPING = 0.85;
 const DEFAULT_HULL_HP = 100;
 const HIT_FLASH_STEPS = 6;
 /** Base power factor for a ship with no reactor equipped. */
@@ -328,10 +335,10 @@ export class Ship {
     const turnIntent = Math.max(-1, Math.min(1, intents.turn));
     const maxTurn = this.avgMaxTurnPerStep * Math.min(1.25, engine);
     if (turnIntent !== 0) {
-      this.angularVel = Math.max(-maxTurn, Math.min(maxTurn, this.angularVel + 0.005 * turnIntent * engine * delta));
+      this.angularVel = Math.max(-maxTurn, Math.min(maxTurn, this.angularVel + TURN_ACCEL * turnIntent * engine * delta));
     }
 
-    this.angularVel *= 0.85;
+    this.angularVel *= ANGULAR_DAMPING;
     this.angle = this.angle.add(this.angularVel * delta);
 
     const fwdCos = this.cosScale;
@@ -340,7 +347,7 @@ export class Ship {
     const vLat = this.vel.x * -fwdSin + this.vel.y * fwdCos;
 
     const dampedFwd = vFwd * 0.993;
-    const dampedLat = vLat * 0.65;
+    const dampedLat = vLat * LATERAL_DAMPING;
 
     this.vel.x = dampedFwd * fwdCos - dampedLat * fwdSin;
     this.vel.y = dampedFwd * fwdSin + dampedLat * fwdCos;

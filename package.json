@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "start": "vite preview",
-    "lint": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && eslint ."
+    "lint": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tests && eslint .",
+    "test": "bash tests/run.sh"
   },
   "dependencies": {
     "@remixicon/react": "^4.9.0",

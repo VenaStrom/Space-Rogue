@@ -350,7 +350,7 @@ export class BridgeControl implements ControlSource {
 export class EnemyAI implements ControlSource {
   private readonly preferredRange: number;
 
-  constructor(preferredRange = 550) {
+  constructor(preferredRange = 750) {
     this.preferredRange = preferredRange;
   }
 
@@ -364,7 +364,7 @@ export class EnemyAI implements ControlSource {
     const bearing = Math.atan2(dy, dx);
     const off = normalizeRadians(bearing - self.heading);
 
-    const turn = Math.max(-1, Math.min(1, off * 3));
+    const turn = Math.max(-1, Math.min(1, off * 2));
 
     let thrust = 0;
     if (Math.abs(off) < 1.0) {

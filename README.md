@@ -50,6 +50,8 @@ A full run should feel like a session — roughly 1–2 hours.
 
 **Difficulty is custom run mods.** Player-picked run modifiers (mutators) that trade extra difficulty for reward multipliers, rather than fixed difficulty presets or an ascension ladder. All four flavors are in scope: economic screws (pricier visas, stingier salvage), combat modifiers (higher enemy grades, denser fights), rule twists (no shield regen in combat, drives that never charge under fire), and reward doublers as the payoff side.
 
+**This is a capital-ship game.** Ships have mass: slow acceleration, ponderous turns, drift through maneuvers, deliberate fire cadence. Cockpits exist for players who want *direct* control, not for twitch dogfighting — flying by hand should feel like conning a warship, not an interceptor.
+
 **Weapons: no ammo, twin-stick aim within arcs.** No consumable ammunition anywhere — fire rate and power are the only limits. Under direct piloting you aim with the mouse cursor, twin-stick style, but each hardpoint respects its firing arc.
 
 **Slow-mo, not pause.** Issuing orders dilates time rather than stopping it — the pressure stays on, but you can think. No full tactical pause.

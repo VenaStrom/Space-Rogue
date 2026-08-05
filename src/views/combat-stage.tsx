@@ -366,7 +366,7 @@ export function CombatStage(props: StageProps) {
         <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Weapons</p>
         <div ref={pipsRef} className="flex gap-1">
           {Array.from({ length: weaponCount }, (_, i) => (
-            <div key={i} className="w-3.5 h-3.5 bg-black/60 border border-gray-800 rounded-[2px] flex items-end overflow-hidden">
+            <div key={i} className="w-3.5 h-3.5 bg-black/60 border border-gray-800 rounded-xs flex items-end overflow-hidden">
               <div className="w-full" style={{ height: "100%", backgroundColor: "#ffd75e" }} />
             </div>
           ))}
