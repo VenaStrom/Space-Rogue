@@ -53,9 +53,9 @@ function SectorMapScreen({ run }: { run: RunState }) {
 
   const station = current?.kind === NodeKind.Station ? current : null;
 
-  return <div className="flex gap-4">
+  return <div className="flex gap-4 w-full max-w-5xl flex-1 min-h-0">
     {/* The map */}
-    <svg viewBox="0 0 100 62" className="border border-gray-800 rounded-xl bg-gray-950 flex-1 max-w-3xl select-none">
+    <svg viewBox="0 0 100 62" className="border border-gray-800 rounded-xl bg-gray-950 flex-1 min-w-0 self-start select-none">
       {/* Edges */}
       {nodes.flatMap(n => n.links
         .filter(l => l > n.id)
@@ -102,8 +102,8 @@ function SectorMapScreen({ run }: { run: RunState }) {
       })}
     </svg>
 
-    {/* Side panel */}
-    <aside className="w-72 flex flex-col gap-3 text-sm">
+    {/* Side panel — scrolls internally, never the page */}
+    <aside className="w-72 flex flex-col gap-3 text-sm overflow-y-auto min-h-0">
       <div className="border border-gray-800 rounded-xl bg-gray-950 p-3">
         <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">Current system</p>
         <p>{current !== undefined ? NODE_LABEL[current.kind] : "?"}</p>
@@ -368,7 +368,7 @@ export function RunView() {
   const hull = getHullDef(run.ship.hullId);
   const inArena = run.screen === RunScreen.Arena;
 
-  return <main className="p-6 flex flex-col gap-4">
+  return <main className="p-6 flex flex-col gap-4 items-stretch w-full max-w-6xl mx-auto min-h-0 overflow-hidden">
     {/* Run header */}
     <div className="flex items-center gap-6 text-sm">
       <span className="uppercase tracking-widest text-gray-500">Sector {run.sector}</span>

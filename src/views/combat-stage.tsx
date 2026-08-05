@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
 import {
   Arena, AsteroidBelt, BridgeControl, Camera, EnemyAI, Minimap, PLAYER_SPAWN, PlayerControl, Starscape,
-  type ArenaStatus, type EncounterShip, type Ship,
+  type ArenaStatus, type EncounterShip,
 } from "../rendering/combat";
+import { ItemCategory as IC, CommandKind, type HullDef } from "../types";
 import type { ItemDef } from "../items";
-import { CommandKind, ItemCategory, type HullDef, type V2 } from "../types";
+import type { V2 } from "../types";
 
 const PHYS_STEP_MS = 1000 / 60; // fixed 60 Hz physics tick
 const WORLD_W = 8000;
@@ -25,16 +26,26 @@ export type CombatResult = {
 
 type HelmControl = PlayerControl | BridgeControl;
 
-type StatsElements = {
+/** DOM elements the frame loop mutates directly — no React re-renders at 60 Hz. */
+type HudDom = {
   renderFps: HTMLElement;
   physFrames: HTMLElement;
   camZoom: HTMLElement;
+  hostiles: HTMLElement;
+  hullFill: HTMLElement;
+  shieldFill: HTMLElement | null;
+  jumpFill: HTMLElement | null;
+  jumpLabel: HTMLElement | null;
+  pipFills: HTMLElement[];
+  mode: HTMLElement;
+  helm: HTMLElement;
+  warn: HTMLElement;
 };
 
 /** The command slot decides how the ship is flown — the whole point of the design. */
 function helmFor(equipped: (ItemDef | null)[], canvas: HTMLCanvasElement, camera: Camera): HelmControl {
-  const command = equipped.find(d => d?.category === ItemCategory.Command);
-  if (command?.category === ItemCategory.Command && command.stats.kind === CommandKind.Bridge) {
+  const command = equipped.find(d => d?.category === IC.Command);
+  if (command?.category === IC.Command && command.stats.kind === CommandKind.Bridge) {
     return new BridgeControl(canvas, camera);
   }
   return new PlayerControl(canvas, camera);
@@ -48,122 +59,73 @@ const POWER_MODE_COLOR: Record<string, string> = {
   jump: "#c98aff",
 };
 
-function drawHud(
-  ctx: CanvasRenderingContext2D,
-  player: Ship | null,
-  control: HelmControl,
-  status: ArenaStatus,
-  enemiesAlive: number,
-  allowRestart: boolean,
-): void {
+function updateHud(hud: HudDom, arena: Arena, control: HelmControl): void {
+  hud.hostiles.textContent = `${arena.enemiesAlive}`;
+  const player = arena.playerShip;
+  if (player === null) return;
+
+  hud.hullFill.style.width = `${Math.round(player.hullFraction * 100)}%`;
+  if (hud.shieldFill !== null) {
+    hud.shieldFill.style.width = `${Math.round(player.shieldFraction * 100)}%`;
+  }
+  if (hud.jumpFill !== null && hud.jumpLabel !== null) {
+    const charge = player.jumpCharge ?? 0;
+    hud.jumpFill.style.width = `${Math.round(charge * 100)}%`;
+    hud.jumpFill.style.backgroundColor = player.jumpReady ? "#e2b8ff" : "#9d5ec9";
+    hud.jumpLabel.textContent = player.jumpReady ? "READY — 4 to spool out" : `${Math.round(charge * 100)}%`;
+  }
+
+  player.weaponReadiness.forEach((pip, i) => {
+    const fill = hud.pipFills[i];
+    if (fill === undefined) return;
+    fill.style.height = `${Math.round((1 - Math.min(1, pip.fraction)) * 100)}%`;
+    fill.style.backgroundColor = pip.fraction <= 0
+      ? (pip.burst ? "#c98aff" : "#ffd75e")
+      : "rgba(255,255,255,0.25)";
+  });
+
+  if (player.hasReactor) {
+    const mode = player.currentPowerMode;
+    hud.mode.textContent = player.canReroute ? `PWR ▸ ${mode.toUpperCase()}` : "PWR ▸ FIXED";
+    hud.mode.style.color = POWER_MODE_COLOR[mode] ?? "rgba(255,255,255,0.6)";
+  } else {
+    hud.mode.textContent = "NO REACTOR";
+    hud.mode.style.color = "#ff8d5e";
+  }
+
+  if (control instanceof PlayerControl) {
+    hud.helm.textContent = `AUTO ${control.autoFire ? "ON" : "OFF"} [T]`;
+    hud.helm.style.color = control.autoFire ? "#ffd75e" : "rgba(255,255,255,0.35)";
+  } else {
+    const focus = control.focusTarget !== null ? "focus locked" : "no focus";
+    hud.helm.textContent = `NAV ${control.navPoints.length}/${player.navPointLimit} · ${focus}`;
+    hud.helm.style.color = "#c98aff";
+  }
+
+  const warns: string[] = [];
+  if (player.hasReactor && player.powerHealth < 1) warns.push(`UNDERPOWERED ×${player.powerHealth.toFixed(2)}`);
+  if (control instanceof BridgeControl && control.timeScale < 1) warns.push("TACTICAL TIME");
+  hud.warn.textContent = warns.join(" · ");
+}
+
+function drawEndOverlay(ctx: CanvasRenderingContext2D, status: ArenaStatus, allowRestart: boolean): void {
+  if (status === "fighting") return;
   const { width: w, height: h } = ctx.canvas;
-
-  if (player !== null) {
-    const barW = 200;
-    const x = 14;
-    let y = h - 30;
-
-    // Hull
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(x, y, barW, 12);
-    ctx.fillStyle = "#57c957";
-    ctx.fillRect(x, y, barW * player.hullFraction, 12);
-
-    // Shield above it
-    if (player.hasShield) {
-      y -= 16;
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(x, y, barW, 12);
-      ctx.fillStyle = "#59c8ff";
-      ctx.fillRect(x, y, barW * player.shieldFraction, 12);
-    }
-
-    // Jump drive charge above that
-    const jump = player.jumpCharge;
-    if (jump !== null) {
-      y -= 16;
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(x, y, barW, 12);
-      ctx.fillStyle = player.jumpReady ? "#e2b8ff" : "#9d5ec9";
-      ctx.fillRect(x, y, barW * jump, 12);
-      if (player.jumpReady) {
-        ctx.font = "10px monospace";
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillText("JUMP READY — press 4 to spool out", x + 6, y + 9);
-      }
-    }
-
-    // Weapon cooldown pips
-    const pips = player.weaponReadiness;
-    const pipY = y - 22;
-    pips.forEach((pip, i) => {
-      const px = x + i * 18;
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(px, pipY, 14, 14);
-      const ready = pip.fraction <= 0;
-      ctx.fillStyle = ready
-        ? (pip.burst ? "#c98aff" : "#ffd75e")
-        : "rgba(255, 255, 255, 0.25)";
-      const fillH = 14 * (1 - Math.min(1, pip.fraction));
-      ctx.fillRect(px, pipY + 14 - fillH, 14, fillH);
-    });
-
-    // Power routing + helm indicators
-    ctx.font = "11px monospace";
-    if (player.hasReactor) {
-      const mode = player.currentPowerMode;
-      ctx.fillStyle = POWER_MODE_COLOR[mode] ?? "rgba(255,255,255,0.6)";
-      ctx.fillText(
-        player.canReroute ? `PWR ▸ ${mode.toUpperCase()} [1-4, 0]` : "PWR ▸ FIXED",
-        x, pipY - 24,
-      );
-      if (player.powerHealth < 1) {
-        ctx.fillStyle = "#ff8d5e";
-        ctx.fillText(`UNDERPOWERED ×${player.powerHealth.toFixed(2)}`, x, pipY - 36);
-      }
-    } else {
-      ctx.fillStyle = "#ff8d5e";
-      ctx.fillText("NO REACTOR — EMERGENCY POWER", x, pipY - 24);
-    }
-    if (control instanceof PlayerControl) {
-      ctx.fillStyle = control.autoFire ? "#ffd75e" : "rgba(255,255,255,0.25)";
-      ctx.fillText(`AUTO ${control.autoFire ? "ON" : "OFF"} [T]`, x, pipY - 12);
-    } else {
-      ctx.fillStyle = "#c98aff";
-      const focus = control.focusTarget !== null ? "FOCUS LOCKED" : "no focus";
-      ctx.fillText(`BRIDGE · NAV ${control.navPoints.length}/${player.navPointLimit} · ${focus}`, x, pipY - 12);
-      if (control.timeScale < 1) {
-        ctx.fillStyle = "#e2b8ff";
-        ctx.fillText("TACTICAL TIME", x, pipY - 48);
-      }
-    }
+  const headline = status === "victory" ? "VICTORY"
+    : status === "escaped" ? "JUMPED OUT"
+      : "SHIP DESTROYED";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+  ctx.fillRect(0, 0, w, h);
+  ctx.textAlign = "center";
+  ctx.font = "bold 42px monospace";
+  ctx.fillStyle = status === "victory" ? "#8dff8d" : status === "escaped" ? "#c98aff" : "#ff8d8d";
+  ctx.fillText(headline, w / 2, h / 2 - 10);
+  if (allowRestart) {
+    ctx.font = "16px monospace";
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.fillText("press R to restart", w / 2, h / 2 + 24);
   }
-
-  // Enemy counter
-  ctx.font = "12px monospace";
-  ctx.fillStyle = "rgba(255,255,255,0.6)";
-  ctx.textAlign = "right";
-  ctx.fillText(`hostiles: ${enemiesAlive}`, w - 14, 20);
   ctx.textAlign = "left";
-
-  // End-state overlay
-  if (status !== "fighting") {
-    const headline = status === "victory" ? "VICTORY"
-      : status === "escaped" ? "JUMPED OUT"
-        : "SHIP DESTROYED";
-    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-    ctx.fillRect(0, 0, w, h);
-    ctx.textAlign = "center";
-    ctx.font = "bold 42px monospace";
-    ctx.fillStyle = status === "victory" ? "#8dff8d" : status === "escaped" ? "#c98aff" : "#ff8d8d";
-    ctx.fillText(headline, w / 2, h / 2 - 10);
-    if (allowRestart) {
-      ctx.font = "16px monospace";
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fillText("press R to restart", w / 2, h / 2 + 24);
-    }
-    ctx.textAlign = "left";
-  }
 }
 
 type StageProps = {
@@ -179,7 +141,7 @@ type StageProps = {
 
 function main(
   ctx: CanvasRenderingContext2D,
-  stats: StatsElements,
+  hud: HudDom,
   { hull, equipped, hullFraction = 1, enemies, onEnd, allowRestart = false }: StageProps,
 ): () => void {
   const starscape = new Starscape(WORLD_W, WORLD_H);
@@ -285,12 +247,13 @@ function main(
       minimap.render(ctx, player.position, player.heading, camera.visibleRect(w, h), w, h, blips);
     }
 
-    drawHud(ctx, player, control, arena.status, arena.enemiesAlive, allowRestart);
+    drawEndOverlay(ctx, arena.status, allowRestart);
 
-    // Update DOM HUD (direct textContent mutation avoids React re-renders)
-    stats.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
-    stats.physFrames.textContent = `${physSteps.toString().padStart(2, " ")} phys`;
-    stats.camZoom.textContent = `${camera.zoom.toFixed(2)}x zoom`;
+    // All ship status lives in the DOM margin, mutated directly per frame
+    updateHud(hud, arena, control);
+    hud.renderFps.textContent = `${Math.round(1000 / deltaMS).toString().padStart(2, " ")} fps`;
+    hud.physFrames.textContent = `${physSteps.toString().padStart(2, " ")} phys`;
+    hud.camZoom.textContent = `${camera.zoom.toFixed(2)}x zoom`;
 
     rafHandle = window.requestAnimationFrame(frame);
   }
@@ -305,39 +268,117 @@ function main(
   };
 }
 
+function StatusBar({ label, color, fillRef, labelRef }: {
+  label: string;
+  color: string;
+  fillRef: React.RefObject<HTMLDivElement | null>;
+  labelRef?: React.RefObject<HTMLSpanElement | null>;
+}) {
+  return <div>
+    <div className="flex justify-between text-[10px] uppercase tracking-widest text-gray-500">
+      <span>{label}</span>
+      {labelRef !== undefined ? <span ref={labelRef} /> : null}
+    </div>
+    <div className="h-3 bg-black/60 rounded-sm overflow-hidden border border-gray-800">
+      <div ref={fillRef} className="h-full" style={{ width: "100%", backgroundColor: color }} />
+    </div>
+  </div>;
+}
+
 export function CombatStage(props: StageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLSpanElement>(null);
   const physRef = useRef<HTMLSpanElement>(null);
   const zoomRef = useRef<HTMLSpanElement>(null);
+  const hostilesRef = useRef<HTMLSpanElement>(null);
+  const hullRef = useRef<HTMLDivElement>(null);
+  const shieldRef = useRef<HTMLDivElement>(null);
+  const jumpRef = useRef<HTMLDivElement>(null);
+  const jumpLabelRef = useRef<HTMLSpanElement>(null);
+  const pipsRef = useRef<HTMLDivElement>(null);
+  const modeRef = useRef<HTMLSpanElement>(null);
+  const helmRef = useRef<HTMLSpanElement>(null);
+  const warnRef = useRef<HTMLSpanElement>(null);
   // Capture the stage inputs once at mount — a fight runs on the fit it started with
   const propsRef = useRef(props);
 
-  useEffect(() => {
-    if (!canvasRef.current || !fpsRef.current || !physRef.current || !zoomRef.current) return;
+  // Static facts about the fit, for which HUD rows exist at all
+  const defs = props.equipped;
+  const weaponCount = defs.filter(d => d?.category === IC.Weapon).length;
+  const hasShield = defs.some(d => d?.category === IC.Shield);
+  const hasDrive = defs.some(d => d?.category === IC.Drive);
 
-    const ctx = canvasRef.current.getContext("2d");
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !fpsRef.current || !physRef.current || !zoomRef.current) return;
+    if (!hostilesRef.current || !hullRef.current || !pipsRef.current) return;
+    if (!modeRef.current || !helmRef.current || !warnRef.current) return;
+
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    return main(
-      ctx,
-      { renderFps: fpsRef.current, physFrames: physRef.current, camZoom: zoomRef.current },
-      propsRef.current,
-    );
+    const pipFills = [...pipsRef.current.children]
+      .map(pip => pip.firstElementChild)
+      .filter((el): el is HTMLElement => el instanceof HTMLElement);
+
+    return main(ctx, {
+      renderFps: fpsRef.current,
+      physFrames: physRef.current,
+      camZoom: zoomRef.current,
+      hostiles: hostilesRef.current,
+      hullFill: hullRef.current,
+      shieldFill: shieldRef.current,
+      jumpFill: jumpRef.current,
+      jumpLabel: jumpLabelRef.current,
+      pipFills,
+      mode: modeRef.current,
+      helm: helmRef.current,
+      warn: warnRef.current,
+    }, propsRef.current);
   }, []);
 
-  return <div className="relative flex justify-center items-center max-w-fit">
-    <canvas
-      ref={canvasRef}
-      height={600}
-      width={800}
-      className="bg-gray-900 aspect-4/3 w-full rounded-sm block"
-    />
-    <div className="absolute top-2 left-2 text-white text-xs font-mono leading-tight pointer-events-none select-none">
-      <span ref={fpsRef}>-- fps</span><br />
-      <span ref={physRef}>-- phys</span><br />
-      <span ref={zoomRef}>-- zoom</span>
+  return <div className="flex gap-4 items-start">
+    <div className="relative flex justify-center items-center max-w-fit">
+      <canvas
+        ref={canvasRef}
+        height={600}
+        width={800}
+        className="bg-gray-900 aspect-4/3 w-full rounded-sm block"
+      />
+      <div className="absolute top-2 left-2 text-white text-xs font-mono leading-tight pointer-events-none select-none">
+        <span ref={fpsRef}>-- fps</span><br />
+        <span ref={physRef}>-- phys</span><br />
+        <span ref={zoomRef}>-- zoom</span>
+      </div>
     </div>
+
+    {/* Ship status margin — plain DOM, mutated by the frame loop */}
+    <aside className="w-52 flex flex-col gap-3 font-mono text-xs pt-1">
+      <p className="text-gray-500 uppercase tracking-widest text-[10px]">
+        Hostiles: <span ref={hostilesRef} className="text-red-400">-</span>
+      </p>
+
+      <StatusBar label="Hull" color="#57c957" fillRef={hullRef} />
+      {hasShield ? <StatusBar label="Shield" color="#59c8ff" fillRef={shieldRef} /> : null}
+      {hasDrive ? <StatusBar label="Jump drive" color="#9d5ec9" fillRef={jumpRef} labelRef={jumpLabelRef} /> : null}
+
+      {weaponCount > 0 ? <div>
+        <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Weapons</p>
+        <div ref={pipsRef} className="flex gap-1">
+          {Array.from({ length: weaponCount }, (_, i) => (
+            <div key={i} className="w-3.5 h-3.5 bg-black/60 border border-gray-800 rounded-[2px] flex items-end overflow-hidden">
+              <div className="w-full" style={{ height: "100%", backgroundColor: "#ffd75e" }} />
+            </div>
+          ))}
+        </div>
+      </div> : null}
+
+      <div className="flex flex-col gap-1">
+        <span ref={modeRef} />
+        <span ref={helmRef} />
+        <span ref={warnRef} className="text-orange-400" />
+      </div>
+    </aside>
   </div>;
 }
 

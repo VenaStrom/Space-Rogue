@@ -1,1 +1,3 @@
 - when i present an example idea of an item or anything really, document it in the repo so i can revisit it some day.
+- this is a full screen experience, optimized for 1080p
+- screen is a solid frame, i never wanna scroll the page to the the UI

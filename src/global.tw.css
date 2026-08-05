@@ -23,7 +23,8 @@
       @apply py-4 px-8 text-xl font-bold bg-neutral-900 flex flex-row justify-between items-center;
     }
     & > main {
-      @apply flex-1 flex flex-col justify-start items-center;
+      /* Solid frame: the page never scrolls — lists inside views scroll instead */
+      @apply flex-1 flex flex-col justify-start items-center overflow-hidden min-h-0;
     }
     & > footer {
       @apply py-4 px-8 text-sm text-gray-400 bg-neutral-900;

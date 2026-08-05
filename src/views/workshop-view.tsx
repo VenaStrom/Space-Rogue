@@ -291,7 +291,7 @@ export function FitWorkshop({ hull, equipped, inventory, onUpdate }: {
   const popoverEquipped = activeSlot !== null ? equippedDefs[activeSlot.slotIdx] : null;
 
   return (
-    <main className="p-6 flex flex-col gap-6 h-dvh overflow-hidden">
+    <div className="flex flex-col gap-6 flex-1 min-h-0 overflow-hidden">
 
       <section className="flex flex-row gap-x-8">
         {/* Preview */}
@@ -406,20 +406,22 @@ export function FitWorkshop({ hull, equipped, inventory, onUpdate }: {
           </div>
         </> : null}
 
-    </main>
+    </div>
   );
 }
 
 /** Dev sandbox wrapper: the workshop editing the persistent dev fit. */
 export function WorkshopView() {
   const { hull, equipped, setEquipped, inventory, setInventory } = useGameState();
-  return <FitWorkshop
-    hull={hull}
-    equipped={equipped}
-    inventory={inventory}
-    onUpdate={(next) => {
-      setEquipped(next.equipped);
-      setInventory(next.inventory);
-    }}
-  />;
+  return <main className="p-6 w-full items-stretch min-h-0">
+    <FitWorkshop
+      hull={hull}
+      equipped={equipped}
+      inventory={inventory}
+      onUpdate={(next) => {
+        setEquipped(next.equipped);
+        setInventory(next.inventory);
+      }}
+    />
+  </main>;
 }
