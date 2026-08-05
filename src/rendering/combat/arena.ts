@@ -46,9 +46,12 @@ export class Arena {
   public readonly loot: LootDrop[] = [];
   private readonly belt: AsteroidBelt;
   private stepCount = 0;
+  /** Whether this encounter ever had hostiles — an empty arena has nothing to win. */
+  private readonly hadEnemies: boolean;
 
   constructor(belt: AsteroidBelt, entries: EncounterShip[]) {
     this.belt = belt;
+    this.hadEnemies = entries.some(e => e.team === "enemy");
     for (const e of entries) {
       const ship = new Ship({ ...e.pos }, e.hull, e.equipped, e.team, e.hullFraction ?? 1);
       const aboard = e.equipped.filter((d): d is ItemDef => d !== null).map(d => d.id);
@@ -71,6 +74,10 @@ export class Arena {
   public get status(): ArenaStatus {
     const player = this.playerShip;
     if (player !== null && !player.alive) return "defeat";
+    if (!this.hadEnemies) {
+      // Nothing here to win against — an empty arena just is
+      return player !== null && player.jumpedOut ? "escaped" : "fighting";
+    }
     if (player !== null && player.jumpedOut && this.enemiesAlive > 0) return "escaped";
     if (this.enemiesAlive === 0) return "victory";
     return "fighting";

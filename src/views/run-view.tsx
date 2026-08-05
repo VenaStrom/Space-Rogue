@@ -287,9 +287,14 @@ function ArenaScreen({ run }: { run: RunState }) {
   if (hull === null) return <p className="text-red-400">Unknown hull — corrupted run.</p>;
 
   const node = run.map.nodes.find(n => n.id === run.map.current);
-  const enemies: StageEnemy[] = (run.alert
-    ? authorityEncounter(run.seed, run.sector, PLAYER_SPAWN)
-    : raiderEncounter(run.seed, run.sector, node?.id ?? 0, PLAYER_SPAWN, node?.enemies)
+  // Hostiles only exist here if the authorities are inbound or the node has an
+  // uncleared raider pack — visiting a peaceful arena spawns nothing.
+  const liveHostiles = run.alert
+    || (node?.kind === NodeKind.Combat && !node.cleared);
+  const enemies: StageEnemy[] = (!liveHostiles ? []
+    : run.alert
+      ? authorityEncounter(run.seed, run.sector, PLAYER_SPAWN)
+      : raiderEncounter(run.seed, run.sector, node?.id ?? 0, PLAYER_SPAWN, node?.enemies)
   ).map(e => ({
     hull: getHullDef(e.hullId) ?? hull,
     equipped: resolveItems(e.equipped),
@@ -300,7 +305,7 @@ function ArenaScreen({ run }: { run: RunState }) {
   const holdCount = run.cargo.length + taken.length;
 
   function finishFight(outcome: CombatResult, tookItems: string[]) {
-    const clearedNodes = outcome.status === "victory" && node !== undefined && node.kind === NodeKind.Combat
+    const clearedNodes = outcome.status === "victory" && node?.kind === NodeKind.Combat
       ? run.map.nodes.map(n => (n.id === node.id ? { ...n, cleared: true } : n))
       : run.map.nodes;
     patchRun({
@@ -326,59 +331,85 @@ function ArenaScreen({ run }: { run: RunState }) {
 
   const remainingLoot = result?.lootItemIds.filter((_, i) => !taken.includes(`${i}`)) ?? [];
 
-  return <div className="relative max-w-fit">
+  return <div className="flex flex-col gap-2">
     {run.alert ? (
-      <p className="mb-2 text-sm text-red-400 font-mono animate-pulse">
+      <p className="text-sm text-red-400 font-mono animate-pulse">
         AUTHORITY RESPONSE IN PROGRESS — you cannot win this. Spool the jump drive (4).
       </p>
     ) : null}
 
-    <CombatStage
-      hull={hull}
-      equipped={resolveItems(run.ship.equipped)}
-      hullFraction={run.ship.hullHp}
-      enemies={enemies}
-      onEnd={onEnd}
-    />
-    <p className="mt-2 text-xs text-gray-600 font-mono max-w-2xl">{STAGE_CONTROLS_HINT}</p>
+    <div className="flex gap-4 items-start">
+      <CombatStage
+        hull={hull}
+        equipped={resolveItems(run.ship.equipped)}
+        hullFraction={run.ship.hullHp}
+        enemies={enemies}
+        onEnd={onEnd}
+      />
 
-    {/* Salvage panel */}
-    {result !== null ? (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-gray-950 border border-gray-700 rounded-xl p-4 w-80 flex flex-col gap-2 shadow-2xl">
-          <p className="text-xs uppercase tracking-widest text-yellow-500">Salvage</p>
-          <p className="text-xs text-gray-500">Hold {holdCount}/{capacity}</p>
-          {result.lootItemIds.length === 0
-            ? <p className="text-sm text-gray-600">Nothing worth taking survived.</p>
-            : result.lootItemIds.map((id, i) => {
+      {/* Hold + adrift salvage — margin real estate, never on the canvas */}
+      <aside className="w-56 flex flex-col gap-2 text-sm border border-gray-800 rounded-xl bg-gray-950 p-3 overflow-y-auto min-h-0">
+        <p className="text-xs uppercase tracking-widest text-gray-500 flex items-center gap-1.5">
+          <RiBox3Line size={14} /> Hold {holdCount}/{capacity}
+        </p>
+        {run.cargo.length === 0 && taken.length === 0
+          ? <p className="text-xs text-gray-700">Empty.</p>
+          : <>
+            {run.cargo.map((id, i) => {
               const def = getItemDef(id);
-              const isTaken = taken.includes(`${i}`);
-              if (!def || isTaken) return null;
-              return (
-                <button type="button" key={i}
-                  className="text-left px-2 py-1.5 rounded border border-gray-700 text-gray-200 hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={holdCount >= capacity}
-                  onClick={() => setTaken(prev => [...prev, `${i}`])}
-                >
-                  Take {def.name}
-                </button>
+              return def === null ? null : (
+                <p key={`c-${i}`} className="text-xs text-gray-400 px-1">{def.name}</p>
               );
             })}
-          {remainingLoot.length === 0 && result.lootItemIds.length > 0
-            ? <p className="text-xs text-gray-600">All taken.</p>
-            : null}
-          <button type="button"
-            className="mt-1 px-2 py-2 rounded border border-green-800 text-green-300 hover:bg-green-950 transition-colors"
-            onClick={() => finishFight(
-              result,
-              taken.map(k => result.lootItemIds[Number(k)]),
-            )}
-          >
-            Done — back to the map
-          </button>
-        </div>
-      </div>
-    ) : null}
+            {taken.map((k) => {
+              const def = result !== null ? getItemDef(result.lootItemIds[Number(k)]) : null;
+              return def === null ? null : (
+                <p key={`t-${k}`} className="text-xs text-yellow-200 px-1">{def.name} <span className="text-yellow-600">new</span></p>
+              );
+            })}
+          </>}
+
+        <div className="border-t border-gray-800 my-1" />
+        <p className="text-xs uppercase tracking-widest text-yellow-600">Adrift</p>
+
+        {result === null
+          ? <p className="text-xs text-gray-700">
+            {liveHostiles ? "Wreck salvage collects here once the fight is over." : "Nothing adrift here."}
+          </p>
+          : <>
+            {result.lootItemIds.length === 0
+              ? <p className="text-xs text-gray-600">Nothing worth taking survived.</p>
+              : result.lootItemIds.map((id, i) => {
+                const def = getItemDef(id);
+                const isTaken = taken.includes(`${i}`);
+                if (!def || isTaken) return null;
+                return (
+                  <button type="button" key={i}
+                    className="text-left px-2 py-1.5 rounded border border-gray-700 text-gray-200 hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled={holdCount >= capacity}
+                    onClick={() => setTaken(prev => [...prev, `${i}`])}
+                  >
+                    Take {def.name}
+                  </button>
+                );
+              })}
+            {remainingLoot.length === 0 && result.lootItemIds.length > 0
+              ? <p className="text-xs text-gray-600">All taken.</p>
+              : null}
+            <button type="button"
+              className="mt-1 px-2 py-2 rounded border border-green-800 text-green-300 hover:bg-green-950 transition-colors"
+              onClick={() => finishFight(
+                result,
+                taken.map(k => result.lootItemIds[Number(k)]),
+              )}
+            >
+              Done — back to the map
+            </button>
+          </>}
+      </aside>
+    </div>
+
+    <p className="text-xs text-gray-600 font-mono max-w-2xl">{STAGE_CONTROLS_HINT}</p>
   </div>;
 }
 
@@ -423,8 +454,12 @@ export function RunView() {
 
   const hull = getHullDef(run.ship.hullId);
   const inArena = run.screen === RunScreen.Arena;
+  const currentNode = run.map.nodes.find(n => n.id === run.map.current);
+  // Tabs only lock while there is an actual fight to be locked into
+  const fightOn = inArena && (run.alert
+    || (currentNode?.kind === NodeKind.Combat && !currentNode.cleared));
 
-  return <main className="p-6 flex flex-col gap-4 items-stretch w-full max-w-6xl mx-auto min-h-0 overflow-hidden">
+  return <main className="p-6 flex flex-col gap-4 items-stretch w-full max-w-7xl mx-auto min-h-0 overflow-hidden">
     {/* Run header */}
     <div className="flex items-center gap-6 text-sm">
       <span className="uppercase tracking-widest text-gray-500 flex items-center gap-1.5">
@@ -444,7 +479,7 @@ export function RunView() {
         return (
           <button type="button"
             key={screen}
-            disabled={inArena ? screen !== RunScreen.Arena : false}
+            disabled={fightOn ? screen !== RunScreen.Arena : false}
             className={`px-4 py-1.5 text-sm transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${run.screen === screen
               ? "bg-gray-700 text-white"
               : "bg-gray-900 text-gray-400 hover:bg-gray-800"

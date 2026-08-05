@@ -178,4 +178,17 @@ const store = new Map<string, string>();
   Math.random = realRandom;
 }
 
+// ── an empty arena is not a victory ───────────────────────────
+{
+  const belt = new AsteroidBelt(8000, 8000, 400, 0);
+  const idle = { update: () => ({ thrust: 0, turn: 0, aimWorld: null, fire: false, powerMode: null }) };
+  const pad17 = (ids: (string | null)[]) => { const f = [...ids]; while (f.length < 17) f.push(null); return f; };
+  const arena = new Arena(belt, [
+    { hull: CH_SLP, equipped: resolveItems(pad17([null])), pos: { x: 4000, y: 4000 }, team: "player", control: idle },
+  ]);
+  for (let i = 0; i < 120; i++) arena.update(1);
+  const status: string = arena.status;
+  assert.equal(status, "fighting", "no enemies ever → nothing to win, nothing ends");
+}
+
 console.log("phase4 run loop: all assertions passed");
